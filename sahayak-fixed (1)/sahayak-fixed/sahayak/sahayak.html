@@ -1,0 +1,2026 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=1, user-scalable=no" />
+  <meta name="theme-color" content="#0F0E17" />
+  <title>Sahayak v2 - Health Worker App</title>
+  <script crossorigin src="https://unpkg.com/react@18/umd/react.production.min.js"></script>
+  <script crossorigin src="https://unpkg.com/react-dom@18/umd/react-dom.production.min.js"></script>
+  <script src="https://unpkg.com/@babel/standalone/babel.min.js"></script>
+  <style>
+    * { margin: 0; padding: 0; box-sizing: border-box; }
+    html, body, #root { height: 100%; overflow: hidden; background: #0a0a12; }
+    body { font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif; -webkit-font-smoothing: antialiased; }
+    ::-webkit-scrollbar { width: 4px; }
+    ::-webkit-scrollbar-track { background: transparent; }
+    ::-webkit-scrollbar-thumb { background: rgba(124,111,224,0.3); border-radius: 4px; }
+    ::placeholder { color: #504E6A; opacity: 0.7; }
+    ::selection { background: rgba(124,111,224,0.3); color: #EEEAF8; }
+    @keyframes geminiPulseOuter { 0%,100% { transform: scale(1); opacity: 0.6; } 50% { transform: scale(1.15); opacity: 0.3; } }
+    @keyframes geminiPulseInner { 0%,100% { transform: scale(1); opacity: 0.8; } 50% { transform: scale(1.08); opacity: 0.5; } }
+    @keyframes geminiRotate { from { transform: rotate(0deg); } to { transform: rotate(360deg); } }
+    @keyframes geminiWavePulse { 0% { transform: scaleY(0.6); opacity: 0.7; } 100% { transform: scaleY(1.2); opacity: 1; } }
+    @keyframes geminiBounce { 0%,100% { transform: translateY(0); } 50% { transform: translateY(-6px); } }
+    @keyframes geminiBounceDot { 0%,100% { transform: translateY(0); } 50% { transform: translateY(-4px); } }
+  </style>
+</head>
+<body>
+  <div id="root"></div>
+  <script type="text/babel">
+// ── Theme System ─────────────────────────────────────────────
+const makeTheme = (dark = true) => ({
+  bg: dark ? "#0F0E17" : "#F5F3FF",
+  surface: dark ? "#1A1928" : "#FFFFFF",
+  surfaceHigh: dark ? "#232235" : "#EDE9FF",
+  border: dark ? "#2E2C45" : "#D4CEFF",
+  accent: "#7C6FE0",
+  accentLight: "#A99DF5",
+  accentBg: dark ? "#1E1B38" : "#EDE9FF",
+  green: "#4CAF7D",
+  greenBg: dark ? "#0F2318" : "#E8F8EF",
+  amber: "#F0A500",
+  amberBg: dark ? "#221800" : "#FFF8E6",
+  red: "#F05454",
+  redBg: dark ? "#220D0D" : "#FFF0F0",
+  text: dark ? "#EEEAF8" : "#1A1928",
+  textSub: dark ? "#8B87A8" : "#5A5780",
+  textMuted: dark ? "#504E6A" : "#9B98B8",
+  mapBg: dark ? "#151425" : "#E8E6FF",
+  warning: "#F0A500",
+  success: "#4CAF7D",
+  dark,
+});
+
+
+// ── Translations (6 languages) ──────────────────────────────
+const T = {
+  en: {
+    appName: "Sahayak", appSubtitle: "Ayushman Bharat · Health Worker App",
+    loginTitle: "Welcome", loginSubtitle: "Sign in to your health worker account",
+    selectRole: "I am a", ashaWorker: "ASHA Worker", doctor: "Doctor", admin: "Admin",
+    phoneNumber: "Phone Number", sendOTP: "Send OTP", enterOTP: "Enter OTP",
+    verifyOTP: "Verify & Login", skipDemo: "Skip — Demo Mode", language: "Language",
+    goodMorning: "Good morning,", registered: "Registered", thisWeek: "This week", critical: "Critical",
+    newCase: "+ New Patient Case", recentCases: "Recent Cases", seeAll: "See all",
+    startAssessment: "Start AI Assessment →", patientName: "Patient Name", age: "Age",
+    village: "Village", newPatient: "New Patient", aiAssessment: "AI Assessment",
+    assessmentResult: "Assessment Result", carePlan: "Care Plan",
+    typeResponse: "Type patient's response...", assessmentReady: "✦ ASSESSMENT READY",
+    viewResult: "View full result →", recommended: "Recommended:",
+    doctorBrief: "✦ GEN AI · DOCTOR PRE-BRIEF", careAdvice: "CARE ADVICE FOR PATIENT",
+    ayushman: "Ayushman Bharat eligible", ayushmanSub: "Treatment may be covered · Check nearest PHC",
+    bookTeleconsult: "📹  Book Teleconsult", callAmbulance: "🚑  Call Ambulance (108)",
+    dispatchAmbulance: "🚑  Dispatch Ambulance", medicines: "Medicines", hydration: "Hydration",
+    followUp: "Follow-up", warningSigns: "Warning signs", playAudio: "🔊 Play Audio",
+    orderMedicine: "💊 Order Medicine", markComplete: "✓ Mark case complete",
+    offline: "Offline — will sync when connected", settings: "Settings",
+    darkMode: "Dark Mode", lightMode: "Light Mode", specialist: "Specialist Referral",
+    prescription: "Prescription", teleconsult: "Video Consult", emergency: "Emergency Dispatch",
+    pharmacyMap: "Nearby Pharmacies", joinCall: "Join Video Call", endCall: "Prescribe & End Call",
+    sendRx: "Send Prescription", shareWhatsApp: "Share via WhatsApp", shareSMS: "Share via SMS",
+    print: "Print", placeOrder: "Place Order", requestTransport: "Request Govt. Transport",
+    referralLetter: "Download Referral Letter", connectedDoctor: "Doctor joined the call",
+    connecting: "Connecting...", tapToSpeak: "TAP TO SPEAK", tapToStop: "TAP TO STOP",
+    processing: "PROCESSING...", listening: "Listening...", speakNow: "Speak now",
+    micDenied: "Mic access denied — type instead", noSpecialist: "No specialist at local PHC",
+    specialistNeeded: "Specialist required", refer: "Refer", eta: "ETA",
+    minutes: "minutes", ambulanceDispatched: "Ambulance dispatched!",
+    gpsCoords: "GPS Coordinates", dispatching: "Dispatching...",
+    prescriptionId: "Prescription ID", diagnosis: "Diagnosis", dosage: "Dosage",
+    duration: "Duration", instructions: "Instructions", share: "Share",
+    nearestPharmacy: "Nearest Medicine Source", inStock: "In stock",
+    limitedStock: "Limited", outOfStock: "Out of stock", govt: "Govt",
+    private: "Private", pickupCode: "Pickup Code", orderPlaced: "Order placed!",
+    availableDoctors: "Available Doctors", waitTime: "Wait time",
+    online: "Online", busy: "Busy", offline: "Offline",
+    specialistRouting: "Specialist Routing", nearestFacility: "Nearest Specialist Facility",
+    teleSpecialist: "Tele-Specialist", noCardiologist: "No cardiologist at PHC",
+    districtHospital: "District Hospital", kmAway: "km away",
+    transportAssistance: "Transport Assistance", referralGenerated: "Referral generated",
+    caseHistory: "Case History", noHistory: "No previous visits recorded",
+    household: "Household", healthScore: "Health Score", addFamily: "Add family member",
+    themeToggle: "Theme", logout: "Logout", confirmLogout: "Are you sure you want to logout?",
+    yes: "Yes", no: "No", cancel: "Cancel", save: "Save",
+    patientProfile: "Patient Profile", visits: "visits", lastVisit: "Last visit",
+    symptoms: "Symptoms", severity: "Severity", action: "Action",
+    homeCare: "Home care", teleconsultToday: "Teleconsult today",
+    emergencyCall: "Emergency — call ambulance", back: "Back",
+  },
+  hi: {
+    appName: "सहायक", appSubtitle: "आयुष्मान भारत · स्वास्थ्य कार्यकर्ता ऐप",
+    loginTitle: "स्वागत है", loginSubtitle: "अपने स्वास्थ्य कार्यकर्ता खाते में साइन इन करें",
+    selectRole: "मैं हूँ", ashaWorker: "आशा कार्यकर्ता", doctor: "डॉक्टर", admin: "प्रशासक",
+    phoneNumber: "फोन नंबर", sendOTP: "OTP भेजें", enterOTP: "OTP दर्ज करें",
+    verifyOTP: "सत्यापित करें और लॉगिन करें", skipDemo: "छोड़ें — डेमो मोड", language: "भाषा",
+    goodMorning: "शुभ प्रभात,", registered: "पंजीकृत", thisWeek: "इस सप्ताह", critical: "गंभीर",
+    newCase: "+ नया रोगी मामला", recentCases: "हाल के मामले", seeAll: "सभी देखें",
+    startAssessment: "AI जांच शुरू करें →", patientName: "रोगी का नाम", age: "आयु",
+    village: "गांव", newPatient: "नया रोगी", aiAssessment: "AI जांच",
+    assessmentResult: "जांच परिणाम", carePlan: "देखभाल योजना",
+    typeResponse: "रोगी की प्रतिक्रिया टाइप करें...", assessmentReady: "✦ जांच तैयार",
+    viewResult: "पूरा परिणाम देखें →", recommended: "सिफारिस:",
+    doctorBrief: "✦ AI · डॉक्टर प्री-ब्रीफ", careAdvice: "रोगी के लिए देखभाल सलाह",
+    ayushman: "आयुष्मान भारत पात्र", ayushmanSub: "उपचार कवर हो सकता है · नजदीकी PHC चेक करें",
+    bookTeleconsult: "📹  टेलीकंसल्ट बुक करें", callAmbulance: "🚑  एम्बुलेंस बुलाएं",
+    dispatchAmbulance: "🚑  एम्बुलेंस भेजें", medicines: "दवाइयाँ", hydration: "जलयोजन",
+    followUp: "फॉलो-अप", warningSigns: "चेतावनी के संकेत", playAudio: "🔊 ऑडियो चलाएं",
+    orderMedicine: "💊 दवा ऑर्डर करें", markComplete: "✓ मामला पूर्ण चिह्नित करें",
+    offline: "ऑफलाइन — कनेक्ट होने पर सिंक होगा", settings: "सेटिंग्स",
+    darkMode: "डार्क मोड", lightMode: "लाइट मोड", specialist: "विशेषज्ञ रेफरल",
+    prescription: "नुस्खा", teleconsult: "वीडियो परामर्श", emergency: "आपातकालीन",
+    pharmacyMap: "नजदीकी फार्मेसी", joinCall: "वीडियो कॉल जॉइन करें",
+    endCall: "नुस्खा लिखें और कॉल समाप्त करें", sendRx: "नुस्खा भेजें",
+    shareWhatsApp: "WhatsApp पर साझा करें", shareSMS: "SMS से साझा करें",
+    print: "प्रिंट", placeOrder: "ऑर्डर दें", requestTransport: "सरकारी परिवहन अनुरोध",
+    referralLetter: "रेफरल पत्र डाउनलोड करें", connectedDoctor: "डॉक्टर कॉल में शामिल हो गए",
+    connecting: "जोड़ा जा रहा है...", tapToSpeak: "बोलने के लिए दबाएं", tapToStop: "रोकने के लिए दबाएं",
+    processing: "प्रक्रिया हो रही है...", listening: "सुन रहा है...", speakNow: "अभी बोलें",
+    micDenied: "माइक उपलब्ध नहीं — टाइप करें", noSpecialist: "PHC पर कोई विशेषज्ञ नहीं",
+    specialistNeeded: "विशेषज्ञ आवश्यक", refer: "रेफर", eta: "ETA",
+    minutes: "मिनट", ambulanceDispatched: "एम्बुलेंस भेज दी गई!",
+    gpsCoords: "GPS निर्देशांक", dispatching: "भेजा जा रहा है...",
+    prescriptionId: "नुस्खा ID", diagnosis: "निदान", dosage: "खुराक",
+    duration: "अवधि", instructions: "निर्देश", share: "साझा करें",
+    nearestPharmacy: "नजदीकी दवा स्रोत", inStock: "स्टॉक में",
+    limitedStock: "सीमित", outOfStock: "स्टॉक खत्म", govt: "सरकारी",
+    private: "निजी", pickupCode: "पिकअप कोड", orderPlaced: "ऑर्डर दिया गया!",
+    availableDoctors: "उपलब्ध डॉक्टर", waitTime: "इंतजार का समय",
+    online: "ऑनलाइन", busy: "व्यस्त", offline: "ऑफलाइन",
+    specialistRouting: "विशेषज्ञ रूटिंग", nearestFacility: "नजदीकी विशेषज्ञ केंद्र",
+    teleSpecialist: "टेली-विशेषज्ञ", noCardiologist: "PHC पर कोई हृदय रोग विशेषज्ञ नहीं",
+    districtHospital: "जिला अस्पताल", kmAway: "किमी दूर",
+    transportAssistance: "परिवहन सहायता", referralGenerated: "रेफरल बनाया गया",
+    caseHistory: "मामला इतिहास", noHistory: "कोई पिछला दौरा दर्ज नहीं",
+    household: "परिवार", healthScore: "स्वास्थ्य स्कोर", addFamily: "परिवार सदस्य जोड़ें",
+    themeToggle: "थीम", logout: "लॉगआउट", confirmLogout: "क्या आप लॉगआउट करना चाहते हैं?",
+    yes: "हाँ", no: "नहीं", cancel: "रद्द", save: "सहेजें",
+    patientProfile: "रोगी प्रोफाइल", visits: "दौरे", lastVisit: "अंतिम दौरा",
+    symptoms: "लक्षण", severity: "गंभीरता", action: "कार्रवाई",
+    homeCare: "घरेलू देखभाल", teleconsultToday: "आज टेलीकंसल्ट",
+    emergencyCall: "आपातकाल — एम्बुलेंस बुलाएं", back: "वापस",
+  },
+  kn: {
+    appName: "ಸಹಾಯಕ", appSubtitle: "ಆಯುಷ್ಮಾನ್ ಭಾರತ · ಆರೋಗ್ಯ ಕಾರ್ಯಕರ್ತ ಅಪ್ಲಿಕೇಶನ್",
+    loginTitle: "ಸ್ವಾಗತ", loginSubtitle: "ನಿಮ್ಮ ಖಾತೆಗೆ ಸೈನ್ ಇನ್ ಮಾಡಿ",
+    selectRole: "ನಾನು", ashaWorker: "ಆಶಾ ಕಾರ್ಯಕರ್ತೆ", doctor: "ವೈದ್ಯ", admin: "ನಿರ್ವಾಹಕ",
+    phoneNumber: "ಫೋನ್ ನಂಬರ್", sendOTP: "OTP ಕಳುಹಿಸಿ", enterOTP: "OTP ನಮೂದಿಸಿ",
+    verifyOTP: "ಪರಿಶೀಲಿಸಿ ಮತ್ತು ಲಾಗಿನ್ ಮಾಡಿ", skipDemo: "ಬಿಟ್ಟುಬಿಡಿ — ಡೆಮೊ ಮೋಡ್", language: "ಭಾಷೆ",
+    goodMorning: "ಶುಭ ಬೆಳಗ್ಗೆ,", registered: "ನೋಂದಾಯಿತ", thisWeek: "ಈ ವಾರ", critical: "ನಿರ್ಣಾಯಕ",
+    newCase: "+ ಹೊಸ ರೋಗಿ ಪ್ರಕರಣ", recentCases: "ಇತ್ತೀಚಿನ ಪ್ರಕರಣಗಳು", seeAll: "ಎಲ್ಲ ನೋಡಿ",
+    startAssessment: "AI ಮೌಲ್ಯಮಾಪನ ಪ್ರಾರಂಭಿಸಿ →", patientName: "ರೋಗಿಯ ಹೆಸರು", age: "ವಯಸ್ಸು",
+    village: "ಗ್ರಾಮ", newPatient: "ಹೊಸ ರೋಗಿ", aiAssessment: "AI ಮೌಲ್ಯಮಾಪನ",
+    assessmentResult: "ಮೌಲ್ಯಮಾಪನ ಫಲಿತಾಂಶ", carePlan: "ಆರೈಕೆ ಯೋಜನೆ",
+    typeResponse: "ರೋಗಿಯ ಪ್ರತಿಕ್ರಿಯೆ ಟೈಪ್ ಮಾಡಿ...", assessmentReady: "✦ ಮೌಲ್ಯಮಾಪನ ಸಿದ್ಧ",
+    viewResult: "ಪೂರ್ಣ ಫಲಿತಾಂಶ ನೋಡಿ →", recommended: "ಶಿಫಾರಸು:",
+    doctorBrief: "✦ AI · ವೈದ್ಯ ಪ್ರಿ-ಬ್ರೀಫ್", careAdvice: "ರೋಗಿಗೆ ಆರೈಕೆ ಸಲಹೆ",
+    ayushman: "ಆಯುಷ್ಮಾನ್ ಭಾರತ ಅರ್ಹ", ayushmanSub: "ಚಿಕಿತ್ಸೆ ಕವರ್ ಆಗಬಹುದು",
+    bookTeleconsult: "📹  ಟೆಲಿಕನ್ಸಲ್ಟ್ ಬುಕ್ ಮಾಡಿ", callAmbulance: "🚑  ಅಂಬುಲೆನ್ಸ್ ಕರೆ ಮಾಡಿ",
+    dispatchAmbulance: "🚑  ಅಂಬುಲೆನ್ಸ್ ಕಳುಹಿಸಿ", medicines: "ಔಷಧಿಗಳು", hydration: "ನೀರಿನಂಶ",
+    followUp: "ಫಾಲೋ-ಅಪ್", warningSigns: "ಎಚ್ಚರಿಕೆ ಚಿಹ್ನೆಗಳು", playAudio: "🔊 ಆಡಿಯೋ ಪ್ಲೇ ಮಾಡಿ",
+    orderMedicine: "💊 ಔಷಧಿ ಆರ್ಡರ್ ಮಾಡಿ", markComplete: "✓ ಪ್ರಕರಣ ಪೂರ್ಣ ಎಂದು ಗುರುತಿಸಿ",
+    offline: "ಆಫ್‌ಲೈನ್ — ಸಂಪರ್ಕಿಸಿದಾಗ ಸಿಂಕ್ ಆಗುತ್ತದೆ", settings: "ಸೆಟ್ಟಿಂಗ್‌ಗಳು",
+    darkMode: "ಡಾರ್ಕ್ ಮೋಡ್", lightMode: "ಲೈಟ್ ಮೋಡ್", specialist: "ತಜ್ಞ ರೆಫರಲ್",
+    prescription: "ಪ್ರಿಸ್ಕ್ರಿಪ್ಶನ್", teleconsult: "ವೀಡಿಯೋ ಸಲಹೆ", emergency: "ತುರ್ತು",
+    pharmacyMap: "ಹತ್ತಿರದ ಫಾರ್ಮಸಿ", joinCall: "ವೀಡಿಯೋ ಕಾಲ್ ಸೇರಿ", endCall: "ಕಾಲ್ ಮುಗಿಸಿ",
+    sendRx: "ಪ್ರಿಸ್ಕ್ರಿಪ್ಶನ್ ಕಳುಹಿಸಿ", shareWhatsApp: "WhatsApp ನಲ್ಲಿ ಹಂಚಿ",
+    shareSMS: "SMS ಮೂಲಕ ಹಂಚಿ", print: "ಪ್ರಿಂಟ್", placeOrder: "ಆರ್ಡರ್ ಮಾಡಿ",
+    requestTransport: "ಸರ್ಕಾರಿ ಸಾರಿಗೆ ವಿನಂತಿ", referralLetter: "ರೆಫರಲ್ ಪತ್ರ ಡೌನ್‌ಲೋಡ್",
+    connectedDoctor: "ವೈದ್ಯರು ಕಾಲ್‌ಗೆ ಸೇರಿದ್ದಾರೆ", connecting: "ಸಂಪರ್ಕಿಸಲಾಗುತ್ತಿದೆ...",
+    tapToSpeak: "ಮಾತನಾಡಲು ಒತ್ತಿ", tapToStop: "ನಿಲ್ಲಿಸಲು ಒತ್ತಿ", processing: "ಪ್ರಕ್ರಿಯೆಯಲ್ಲಿದೆ...",
+    listening: "ಕೇಳುತ್ತಿದೆ...", speakNow: "ಈಗ ಮಾತನಾಡಿ", micDenied: "ಮೈಕ್ ಲಭ್ಯವಿಲ್ಲ — ಟೈಪ್ ಮಾಡಿ",
+    noSpecialist: "PHC ನಲ್ಲಿ ತಜ್ಞರು ಇಲ್ಲ", specialistNeeded: "ತಜ್ಞ ಅಗತ್ಯವಿದೆ", refer: "ರೆಫರ್",
+    eta: "ETA", minutes: "ನಿಮಿಷ", ambulanceDispatched: "ಅಂಬುಲೆನ್ಸ್ ಕಳುಹಿಸಲಾಗಿದೆ!",
+    gpsCoords: "GPS ನಿರ್ದೇಶಾಂಕಗಳು", dispatching: "ಕಳುಹಿಸಲಾಗುತ್ತಿದೆ...",
+    prescriptionId: "ಪ್ರಿಸ್ಕ್ರಿಪ್ಶನ್ ID", diagnosis: "ರೋಗನಿರ್ಣಯ", dosage: "ಮೋತಾದೆ",
+    duration: "ಅವಧಿ", instructions: "ಸೂಚನೆಗಳು", share: "ಹಂಚಿ",
+    nearestPharmacy: "ಹತ್ತಿರದ ಔಷಧ ಮೂಲ", inStock: "ಸ್ಟಾಕ್‌ನಲ್ಲಿ",
+    limitedStock: "ಸೀಮಿತ", outOfStock: "ಸ್ಟಾಕ್ ಮುಗಿದಿದೆ", govt: "ಸರ್ಕಾರಿ",
+    private: "ಖಾಸಗಿ", pickupCode: "ಪಿಕಪ್ ಕೋಡ್", orderPlaced: "ಆರ್ಡರ್ ನೀಡಲಾಗಿದೆ!",
+    availableDoctors: "ಲಭ್ಯವಿರುವ ವೈದ್ಯರು", waitTime: "ಕಾಯುವ ಸಮಯ",
+    online: "ಆನ್‌ಲೈನ್", busy: "ಬಿಜಿ", offline: "ಆಫ್‌ಲೈನ್",
+    specialistRouting: "ತಜ್ಞ ರೂಟಿಂಗ್", nearestFacility: "ಹತ್ತಿರದ ತಜ್ಞ ಕೇಂದ್ರ",
+    teleSpecialist: "ಟೆಲಿ-ತಜ್ಞ", noCardiologist: "PHC ನಲ್ಲಿ ಹೃದಯರೋಗ ತಜ್ಞ ಇಲ್ಲ",
+    districtHospital: "ಜಿಲ್ಲಾ ಆಸ್ಪತ್ರೆ", kmAway: "ಕಿಮೀ ದೂರ",
+    transportAssistance: "ಸಾರಿಗೆ ಸಹಾಯ", referralGenerated: "ರೆಫರಲ್ ರಚಿಸಲಾಗಿದೆ",
+    caseHistory: "ಪ್ರಕರಣ ಇತಿಹಾಸ", noHistory: "ಹಿಂದಿನ ಭೇಟಿಗಳು ದಾಖಲಾಗಿಲ್ಲ",
+    household: "ಮನೆ", healthScore: "ಆರೋಗ್ಯ ಅಂಕ", addFamily: "ಕುಟುಂಬ ಸದಸ್ಯರನ್ನು ಸೇರಿಸಿ",
+    themeToggle: "ಥೀಮ್", logout: "ಲಾಗ್ ಔಟ್", confirmLogout: "ನೀವು ಖಚಿತವಾಗಿ ಲಾಗ್ ಔಟ್ ಮಾಡಲು ಬಯಸುವಿರಾ?",
+    yes: "ಹೌದು", no: "ಇಲ್ಲ", cancel: "ರದ್ದು", save: "ಉಳಿಸಿ",
+    patientProfile: "ರೋಗಿ ಪ್ರೊಫೈಲ್", visits: "ಭೇಟಿಗಳು", lastVisit: "ಕೊನೆಯ ಭೇಟಿ",
+    symptoms: "ಲಕ್ಷಣಗಳು", severity: "ತೀವ್ರತೆ", action: "ಕ್ರಮ",
+    homeCare: "ಮನೆ ಆರೈಕೆ", teleconsultToday: "ಇಂದು ಟೆಲಿಕನ್ಸಲ್ಟ್",
+    emergencyCall: "ತುರ್ತು — ಅಂಬುಲೆನ್ಸ್ ಕರೆ", back: "ಹಿಂದೆ",
+  },
+  ta: {
+    appName: "சகாயக்", appSubtitle: "ஆயுஷ்மான் பாரத் · சுகாதார தொழிலாளர் பயன்பாடு",
+    loginTitle: "வரவேற்கிறோம்", loginSubtitle: "உங்கள் கணக்கில் உள்நுழையுங்கள்",
+    selectRole: "நான்", ashaWorker: "ஆஷா தொழிலாளி", doctor: "மருத்துவர்", admin: "நிர்வாகி",
+    phoneNumber: "தொலைபேசி எண்", sendOTP: "OTP அனுப்பு", enterOTP: "OTP உள்ளிடு",
+    verifyOTP: "சரிபார்த்து உள்நுழை", skipDemo: "தவிர் — டெமோ பயன்முறை", language: "மொழி",
+    goodMorning: "காலை வணக்கம்,", registered: "பதிவு செய்யப்பட்டது", thisWeek: "இந்த வாரம்", critical: "நிர்ணாயகம்",
+    newCase: "+ புதிய நோயாளி வழக்கு", recentCases: "சமீபத்திய வழக்குகள்", seeAll: "எல்லாம் பார்",
+    startAssessment: "AI மதிப்பீடு தொடங்கு →", patientName: "நோயாளி பெயர்", age: "வயது",
+    village: "கிராமம்", newPatient: "புதிய நோயாளி", aiAssessment: "AI மதிப்பீடு",
+    assessmentResult: "மதிப்பீடு முடிவு", carePlan: "பராமரிப்பு திட்டம்",
+    typeResponse: "நோயாளியின் பதிலை தட்டச்சு செய்க...", assessmentReady: "✦ மதிப்பீடு தயார்",
+    viewResult: "முழு முடிவைப் பார் →", recommended: "பரிந்துரை:",
+    doctorBrief: "✦ AI · மருத்துவர் பிரீஃப்", careAdvice: "நோயாளிக்கு பராமரிப்பு ஆலோசனை",
+    ayushman: "ஆயுஷ்மான் பாரத் தகுதி", ayushmanSub: "சிகிச்சை கவர் ஆகலாம்",
+    bookTeleconsult: "📹  டெலிகன்சல்ட் பதிவு", callAmbulance: "🚑  ஆம்புலன்ஸ் அழை",
+    dispatchAmbulance: "🚑  ஆம்புலன்ஸ் அனுப்பு", medicines: "மருந்துகள்", hydration: "நீர்ச்சத்து",
+    followUp: "பின்தொடர்தல்", warningSigns: "எச்சரிக்கை அறிகுறிகள்", playAudio: "🔊 ஆடியோ இயக்கு",
+    orderMedicine: "💊 மருந்து ஆர்டர்", markComplete: "✓ வழக்கு முடிந்தது",
+    offline: "ஆஃப்லைன் — இணைக்கும்போது ஒத்திசைக்கும்", settings: "அமைப்புகள்",
+    darkMode: "இருண்ட பயன்முறை", lightMode: "ஒளி பயன்முறை", specialist: "நிபுணர் பரிந்துரை",
+    prescription: "மருந்து சீட்டு", teleconsult: "வீடியோ ஆலோசனை", emergency: "அவசரநிலை",
+    pharmacyMap: "அருகிலுள்ள மருந்தகங்கள்", joinCall: "வீடியோ அழைப்பில் சேர்",
+    endCall: "கட்டை முடி", sendRx: "மருந்து சீட்டு அனுப்பு",
+    shareWhatsApp: "WhatsApp-ல் பகிர்", shareSMS: "SMS மூலம் பகிர்",
+    print: "அச்சிடு", placeOrder: "ஆர்டர் செய்", requestTransport: "அரசு போக்குவரத்து கோரு",
+    referralLetter: "பரிந்துரை கடிதம் பதிவிறக்கு", connectedDoctor: "மருத்துவர் அழைப்பில் சேர்ந்தார்",
+    connecting: "இணைக்கிறது...", tapToSpeak: "பேச தட்டவும்", tapToStop: "நிறுத்த தட்டவும்",
+    processing: "செயலாக்குகிறது...", listening: "கேட்கிறது...", speakNow: "இப்போது பேசுங்கள்",
+    micDenied: "மைக் இல்லை — தட்டச்சு செய்யுங்கள்", noSpecialist: "PHC-ல் நிபுணர் இல்லை",
+    specialistNeeded: "நிபுணர் தேவை", refer: "ரெஃபர்",
+    eta: "ETA", minutes: "நிமிடங்கள்", ambulanceDispatched: "ஆம்புலன்ஸ் அனுப்பப்பட்டது!",
+    gpsCoords: "GPS ஆயத்தொலைவுகள்", dispatching: "அனுப்பப்படுகிறது...",
+    prescriptionId: "மருந்து சீட்டு ID", diagnosis: "நோயறிதல்", dosage: "மருந்தளவு",
+    duration: "காலம்", instructions: "வழிமுறைகள்", share: "பகிர்",
+    nearestPharmacy: "அருகிலுள்ள மருந்து மூலம்", inStock: "கையிருப்பில்",
+    limitedStock: "குறைவான", outOfStock: "கையிருப்பு இல்லை", govt: "அரசு",
+    private: "தனியார்", pickupCode: "பிக்கப் குறியீடு", orderPlaced: "ஆர்டர் வைக்கப்பட்டது!",
+    availableDoctors: "கிடைக்கும் மருத்துவர்கள்", waitTime: "காத்திருப்பு நேரம்",
+    online: "ஆன்லைன்", busy: "பிஸி", offline: "ஆஃப்லைன்",
+    specialistRouting: "நிபுணர் வழிசெலுத்தல்", nearestFacility: "அருகிலுள்ள நிபுணர் மையம்",
+    teleSpecialist: "டெலி-நிபுணர்", noCardiologist: "PHC-ல் இதய நிபுணர் இல்லை",
+    districtHospital: "மாவட்ட மருத்துவமனை", kmAway: "கிமீ தூரம்",
+    transportAssistance: "போக்குவரத்து உதவி", referralGenerated: "பரிந்துரை உருவாக்கப்பட்டது",
+    caseHistory: "வழக்கு வரலாறு", noHistory: "முந்தைய வருகைகள் பதிவு செய்யப்படவில்லை",
+    household: "குடும்பம்", healthScore: "சுகாதார மதிப்பெண்", addFamily: "குடும்ப உறுப்பினரைச் சேர்",
+    themeToggle: "தீம்", logout: "வெளியேறு", confirmLogout: "நிச்சயமாக வெளியேற விரும்புகிறீர்களா?",
+    yes: "ஆம்", no: "இல்லை", cancel: "ரத்து", save: "சேமி",
+    patientProfile: "நோயாளி சுயவிவரம்", visits: "வருகைகள்", lastVisit: "கடைசி வருகை",
+    symptoms: "அறிகுறிகள்", severity: "தீவிரம்", action: "செயல்",
+    homeCare: "வீட்டு பராமரிப்பு", teleconsultToday: "இன்று டெலிகன்சல்ட்",
+    emergencyCall: "அவசரம் — ஆம்புலன்ஸ் அழை", back: "பின்",
+  },
+  te: {
+    appName: "సహాయక్", appSubtitle: "ఆయుష్మాన్ భారత్ · ఆరోగ్య కార్యకర్త యాప్",
+    loginTitle: "స్వాగతం", loginSubtitle: "మీ ఖాతాలోకి లాగిన్ అవ్వండి",
+    selectRole: "నేను", ashaWorker: "ఆశా వర్కర్", doctor: "డాక్టర్", admin: "అడ్మిన్",
+    phoneNumber: "ఫోన్ నంబర్", sendOTP: "OTP పంపండి", enterOTP: "OTP నమోదు చేయండి",
+    verifyOTP: "ధృవీకరించి లాగిన్ అవ్వండి", skipDemo: "దాటవేయి — డెమో మోడ్", language: "భాష",
+    goodMorning: "శుభోదయం,", registered: "నమోదయింది", thisWeek: "ఈ వారం", critical: "క్రిటికల్",
+    newCase: "+ కొత్త రోగి కేసు", recentCases: "ఇటీవలి కేసులు", seeAll: "అన్నీ చూడు",
+    startAssessment: "AI అసెస్‌మెంట్ ప్రారంభించు →", patientName: "రోగి పేరు", age: "వయసు",
+    village: "గ్రామం", newPatient: "కొత్త రోగి", aiAssessment: "AI అసెస్‌మెంట్",
+    assessmentResult: "అసెస్‌మెంట్ ఫలితం", carePlan: "కేర్ ప్లాన్",
+    typeResponse: "రోగి స్పందన టైప్ చేయండి...", assessmentReady: "✦ అసెస్‌మెంట్ సిద్ధం",
+    viewResult: "పూర్తి ఫలితం చూడు →", recommended: "సిఫార్సు:",
+    doctorBrief: "✦ AI · డాక్టర్ ప్రీ-బ్రీఫ్", careAdvice: "రోగికి సంరక్షణ సలహా",
+    ayushman: "ఆయుష్మాన్ భారత్ అర్హులు", ayushmanSub: "చికిత్స కవర్ అవుతుంది",
+    bookTeleconsult: "📹  టెలీకన్సల్ట్ బుక్", callAmbulance: "🚑  అంబులెన్స్ పిలవండి",
+    dispatchAmbulance: "🚑  అంబులెన్స్ పంపండి", medicines: "మందులు", hydration: "నీటి సత్తువ",
+    followUp: "ఫాలో-అప్", warningSigns: "హెచ్చరిక సంకేతాలు", playAudio: "🔊 ఆడియో వినండి",
+    orderMedicine: "💊 మందు ఆర్డర్ చేయండి", markComplete: "✓ కేసు పూర్తయింది",
+    offline: "ఆఫ్‌లైన్ — కనెక్ట్ అయినప్పుడు సమకాలీకరించబడుతుంది", settings: "సెట్టింగ్‌లు",
+    darkMode: "డార్క్ మోడ్", lightMode: "లైట్ మోడ్", specialist: "నిపుణుల రెఫరల్",
+    prescription: "ప్రిస్క్రిప్షన్", teleconsult: "వీడియో కన్సల్ట్", emergency: "అత్యవసర",
+    pharmacyMap: "సమీప ఔషధాలయాలు", joinCall: "వీడియో కాల్‌లో చేరు",
+    endCall: "ప్రిస్క్రిప్షన్ & కాల్ ముగించు", sendRx: "ప్రిస్క్రిప్షన్ పంపండి",
+    shareWhatsApp: "WhatsApp లో పంచుకోండి", shareSMS: "SMS ద్వారా పంచుకోండి",
+    print: "ప్రింట్", placeOrder: "ఆర్డర్ చేయండి", requestTransport: "ప్రభుత్వ రవాణా అభ్యర్థన",
+    referralLetter: "రెఫరల్ లెటర్ డౌన్‌లోడ్", connectedDoctor: "డాక్టర్ కాల్‌లో చేరారు",
+    connecting: "కనెక్ట్ అవుతోంది...", tapToSpeak: "మాట్లాడేందుకు నొక్కండి", tapToStop: "ఆపేందుకు నొక్కండి",
+    processing: "ప్రాసెస్ అవుతోంది...", listening: "వింటున్నాను...", speakNow: "ఇప్పుడు మాట్లాడండి",
+    micDenied: "మైక్ లేదు — టైప్ చేయండి", noSpecialist: "PHC లో నిపుణులు లేరు",
+    specialistNeeded: "నిపుణులు అవసరం", refer: "రెఫర్",
+    eta: "ETA", minutes: "నిమిషాలు", ambulanceDispatched: "అంబులెన్స్ పంపబడింది!",
+    gpsCoords: "GPS నిర్దేశాంకాలు", dispatching: "పంపిస్తోంది...",
+    prescriptionId: "ప్రిస్క్రిప్షన్ ID", diagnosis: "నిర్ధారణ", dosage: "మోతాదు",
+    duration: "వ్యవధి", instructions: "సూచనలు", share: "షేర్ చేయండి",
+    nearestPharmacy: "సమీప మందు మూలం", inStock: "స్టాక్‌లో",
+    limitedStock: "పరిమిత", outOfStock: "స్టాక్ లేదు", govt: "ప్రభుత్వ",
+    private: "ప్రైవేట్", pickupCode: "పికప్ కోడ్", orderPlaced: "ఆర్డర్ ప్లేస్ అయింది!",
+    availableDoctors: "అందుబాటులో ఉన్న డాక్టర్లు", waitTime: "వేచి ఉండే సమయం",
+    online: "ఆన్‌లైన్", busy: "బిజీ", offline: "ఆఫ్‌లైన్",
+    specialistRouting: "నిపుణుల రూటింగ్", nearestFacility: "సమీప నిపుణుల కేంద్రం",
+    teleSpecialist: "టెలీ-నిపుణులు", noCardiologist: "PHC లో గుండె వైద్యుడు లేరు",
+    districtHospital: "జిల్లా ఆసుపత్రి", kmAway: "కిమీ దూరం",
+    transportAssistance: "రవాణా సహాయం", referralGenerated: "రెఫరల్ రూపొందించబడింది",
+    caseHistory: "కేసు చరిత్ర", noHistory: "మునుపటి సందర్శనాలు లేవు",
+    household: "కుటుంబం", healthScore: "ఆరోగ్య స్కోర్", addFamily: "కుటుంబ సభ్యుడిని జోడించండి",
+    themeToggle: "థీమ్", logout: "లాగౌట్", confirmLogout: "మీరు ఖచ్చితంగా లాగౌట్ అవ్వాలనుకుంటున్నారా?",
+    yes: "అవును", no: "కాదు", cancel: "రద్దు", save: "సేవ్ చేయండి",
+    patientProfile: "రోగి ప్రొఫైల్", visits: "సందర్శనాలు", lastVisit: "చివరి సందర్శన",
+    symptoms: "లక్షణాలు", severity: "తీవ్రత", action: "చర్య",
+    homeCare: "ఇంటి సంరక్షణ", teleconsultToday: "ఈరోజు టెలీకన్సల్ట్",
+    emergencyCall: "అత్యవసరం — అంబులెన్స్ పిలవండి", back: "వెనక్కి",
+  },
+  mr: {
+    appName: "सहायक", appSubtitle: "आयुष्मान भारत · आरोग्य कार्यकर्ता अॅप",
+    loginTitle: "स्वागत", loginSubtitle: "आपल्या खात्यात साइन इन करा",
+    selectRole: "मी आहे", ashaWorker: "आशा कार्यकर्ती", doctor: "डॉक्टर", admin: "प्रशासक",
+    phoneNumber: "फोन नंबर", sendOTP: "OTP पाठवा", enterOTP: "OTP टाका",
+    verifyOTP: "सत्यापित करा आणि लॉगिन करा", skipDemo: "वगळा — डेमो मोड", language: "भाषा",
+    goodMorning: "शुभ सकाळ,", registered: "नोंदणी", thisWeek: "या आठवड्यात", critical: "गंभीर",
+    newCase: "+ नवीन रुग्ण प्रकरण", recentCases: "अलीकडील प्रकरणे", seeAll: "सर्व पहा",
+    startAssessment: "AI तपासणी सुरू करा →", patientName: "रुग्णाचे नाव", age: "वय",
+    village: "गाव", newPatient: "नवीन रुग्ण", aiAssessment: "AI तपासणी",
+    assessmentResult: "तपासणी निकाल", carePlan: "काळजी योजना",
+    typeResponse: "रुग्णाचा प्रतिसाद टाइप करा...", assessmentReady: "✦ तपासणी तयार",
+    viewResult: "संपूर्ण निकाल पहा →", recommended: "शिफारस:",
+    doctorBrief: "✦ AI · डॉक्टर प्री-ब्रीफ", careAdvice: "रुग्णासाठी काळजी सल्ला",
+    ayushman: "आयुष्मान भारत पात्र", ayushmanSub: "उपचार कव्हर होऊ शकतो",
+    bookTeleconsult: "📹  टेलीकन्सल्ट बुक करा", callAmbulance: "🚑  रुग्णवाहिका बोलवा",
+    dispatchAmbulance: "🚑  रुग्णवाहिका पाठवा", medicines: "औषधे", hydration: "पाणी प्या",
+    followUp: "पाठपुरावा", warningSigns: "धोक्याची चिन्हे", playAudio: "🔊 ऑडिओ ऐका",
+    orderMedicine: "💊 औषध मागवा", markComplete: "✓ प्रकरण पूर्ण",
+    offline: "ऑफलाइन — कनेक्ट झाल्यावर सिंक होईल", settings: "सेटिंग्ज",
+    darkMode: "डार्क मोड", lightMode: "लाइट मोड", specialist: "तज्ज्ञ रेफरल",
+    prescription: "प्रिस्क्रिप्शन", teleconsult: "व्हिडिओ सल्ला", emergency: "आपत्कालीन",
+    pharmacyMap: "जवळील फार्मसी", joinCall: "व्हिडिओ कॉल जॉइन करा",
+    endCall: "प्रिस्क्रिप्शन & कॉल संपवा", sendRx: "प्रिस्क्रिप्शन पाठवा",
+    shareWhatsApp: "WhatsApp वर शेअर करा", shareSMS: "SMS ने शेअर करा",
+    print: "प्रिंट", placeOrder: "ऑर्डर द्या", requestTransport: "सरकारी वाहतूक विनंती",
+    referralLetter: "रेफरल पत्र डाउनलोड", connectedDoctor: "डॉक्टर कॉलमध्ये सामील झाले",
+    connecting: "जोडत आहे...", tapToSpeak: "बोलण्यासाठी दाबा", tapToStop: "थांबण्यासाठी दाबा",
+    processing: "प्रक्रिया होत आहे...", listening: "ऐकत आहे...", speakNow: "आता बोला",
+    micDenied: "माइक नाही — टाइप करा", noSpecialist: "PHC वर तज्ज्ञ नाही",
+    specialistNeeded: "तज्ज्ञ आवश्यक", refer: "रेफर",
+    eta: "ETA", minutes: "मिनिटे", ambulanceDispatched: "रुग्णवाहिका पाठवली!",
+    gpsCoords: "GPS निर्देशांक", dispatching: "पाठवत आहे...",
+    prescriptionId: "प्रिस्क्रिप्शन ID", diagnosis: "निदान", dosage: "मात्रा",
+    duration: "कालावधी", instructions: "सूचना", share: "शेअर करा",
+    nearestPharmacy: "जवळील औषध स्रोत", inStock: "स्टॉकमध्ये",
+    limitedStock: "मर्यादित", outOfStock: "स्टॉक संपला", govt: "सरकारी",
+    private: "खाजगी", pickupCode: "पिकअप कोड", orderPlaced: "ऑर्डर दिला!",
+    availableDoctors: "उपलब्ध डॉक्टर", waitTime: "वाट पाहण्याचा वेळ",
+    online: "ऑनलाइन", busy: "बिझी", offline: "ऑफलाइन",
+    specialistRouting: "तज्ज्ञ रूटिंग", nearestFacility: "जवळील तज्ज्ञ केंद्र",
+    teleSpecialist: "टेली-तज्ज्ञ", noCardiologist: "PHC वर हृदयरोग तज्ज्ञ नाही",
+    districtHospital: "जिल्हा रुग्णालय", kmAway: "किमी दूर",
+    transportAssistance: "वाहतूक सहाय्य", referralGenerated: "रेफरल तयार झाले",
+    caseHistory: "प्रकरण इतिहास", noHistory: "मागील भेटी नोंदवल्या नाहीत",
+    household: "कुटुंब", healthScore: "आरोग्य स्कोर", addFamily: "कुटुंब सदस्य जोडा",
+    themeToggle: "थीम", logout: "लॉगआउट", confirmLogout: "तुम्हाला खात्रीने लॉगआउट करायचे आहे?",
+    yes: "होय", no: "नाही", cancel: "रद्द", save: "जतन करा",
+    patientProfile: "रुग्ण प्रोफाइल", visits: "भेटी", lastVisit: "शेवटची भेट",
+    symptoms: "लक्षणे", severity: "गंभीरता", action: "कृती",
+    homeCare: "घरगुती काळजी", teleconsultToday: "आज टेलीकन्सल्ट",
+    emergencyCall: "आपत्कालीन — रुग्णवाहिका बोलवा", back: "मागे",
+  },
+};
+
+const langVoice = { en: "en-IN", hi: "hi-IN", kn: "kn-IN", ta: "ta-IN", te: "te-IN", mr: "mr-IN" };
+const langLabel = { en: "English", hi: "Hindi", kn: "Kannada", ta: "Tamil", te: "Telugu", mr: "Marathi" };
+
+
+// ── Mock Data ────────────────────────────────────────────────
+const patients = [
+  { id: 1, name: "Savitri Devi", age: 52, village: "Rampur", severity: "amber", symptom: "Fever, cough", time: "2h ago", history: [
+    { date: "2026-04-15", symptom: "Headache", severity: "Mild", action: "Home care" },
+    { date: "2026-03-02", symptom: "Fever", severity: "Moderate", action: "Teleconsult" },
+  ]},
+  { id: 2, name: "Mohan Lal", age: 34, village: "Rampur", severity: "green", symptom: "Back pain", time: "Yesterday", history: [] },
+  { id: 3, name: "Kamla Bai", age: 67, village: "Satna", severity: "red", symptom: "Chest pain", time: "3h ago", history: [
+    { date: "2026-02-20", symptom: "Chest tightness", severity: "Moderate", action: "Hospital visit" },
+  ]},
+  { id: 4, name: "Raju Kumar", age: 8, village: "Rampur", severity: "green", symptom: "Diarrhoea", time: "Yesterday", history: [] },
+];
+
+const mockDoctors = [
+  { id: 1, name: "Dr. Ananya Sharma", specialty: "General Medicine", status: "online", wait: "~5 min", avatar: "AS" },
+  { id: 2, name: "Dr. Ravi Patel", specialty: "Pediatrics", status: "online", wait: "~2 min", avatar: "RP" },
+  { id: 3, name: "Dr. Sunita Mehta", specialty: "Cardiology", status: "busy", wait: "~20 min", avatar: "SM" },
+  { id: 4, name: "Dr. Vikram Rao", specialty: "Orthopedics", status: "online", wait: "~8 min", avatar: "VR" },
+];
+
+const mockPharmacies = [
+  { id: 1, name: "Jan Aushadhi Kendra", dist: "2.3 km", stock: "full", type: "govt" },
+  { id: 2, name: "Ram Medical Store", dist: "3.1 km", stock: "partial", type: "private" },
+  { id: 3, name: "PHC Dispensary", dist: "4.8 km", stock: "full", type: "govt" },
+  { id: 4, name: "Sharma Chemist", dist: "5.2 km", stock: "out", type: "private" },
+];
+
+const mockSpecialistFacilities = [
+  { id: 1, name: "District Hospital", specialty: "Cardiology", dist: "45 km", wait: "2h", hasTele: true },
+  { id: 2, name: "City Medical College", specialty: "Orthopedics", dist: "62 km", wait: "4h", hasTele: true },
+  { id: 3, name: "Women's Health Center", specialty: "Gynecology", dist: "38 km", wait: "1h", hasTele: false },
+];
+
+
+// ── Helper Functions ─────────────────────────────────────────
+const severityMap = (t) => ({
+  green: { label: "Mild", color: t.green, bg: t.greenBg },
+  amber: { label: "Moderate", color: t.amber, bg: t.amberBg },
+  red: { label: "Critical", color: t.red, bg: t.redBg },
+});
+
+const buildSystemPrompt = (lang, patientName, patientAge, patientVillage) => {
+  const langNames = { en: "English", hi: "Hindi", kn: "Kannada", ta: "Tamil", te: "Telugu", mr: "Marathi" };
+  const langName = langNames[lang] || "English";
+
+  return `You are an AI clinical assistant in the Sahayak app for ASHA workers in rural India.
+
+CRITICAL LANGUAGE RULE: Respond ENTIRELY in ${langName}. Every single word must be in ${langName}. Do NOT mix languages.
+
+Patient: ${patientName}, age ${patientAge}, from ${patientVillage}.
+
+Conduct a structured symptom interview ONE focused question at a time, like a warm doctor in person. Cover: main complaint → duration → severity (1-10) → associated symptoms → relevant history → medications. After 6-8 exchanges, generate the final assessment.
+
+When ready, output EXACTLY this (keys in English, values in ${langName}):
+ASSESSMENT:
+Severity: [Mild / Moderate / Critical]
+Likely condition: [diagnosis]
+Recommended action: [Home care / Teleconsult today / Emergency — call ambulance]
+Doctor brief: [2-3 clinical sentences]
+Care advice: [2-3 patient care instructions]
+
+Keep questions SHORT — under 20 words. One question only. Be warm and empathetic. Never lecture.`;
+};
+
+
+// ── Mock AI Responses ────────────────────────────────────────
+// Detects symptom from first user message, adapts questions.
+
+const mockScripts = {
+  fever: {
+    en: ["How long has the fever been going on?","On a scale of 1 to 10, how severe is the fever?","Are there any other symptoms like cough, headache, or body aches?","Has the patient taken any medication so far?","Does the patient have any chronic conditions like diabetes or hypertension?","Is the patient able to eat and drink normally?","Any difficulty breathing or chest pain?",`ASSESSMENT:\nSeverity: Moderate\nLikely condition: Viral fever with upper respiratory infection\nRecommended action: Teleconsult today\nDoctor brief: Patient presents with fever and mild respiratory symptoms. Vitals appear stable. No red flags identified.\nCare advice: Keep hydrated, rest well, take paracetamol for fever. Monitor temperature every 4 hours. Seek immediate care if breathing difficulty develops.`],
+    hi: ["बुखार कब से है?","1 से 10 के बीच, बुखार कितना गंभीर है?","क्या खांसी, सिरदर्द या शरीर में दर्द जैसे अन्य लक्षण हैं?","क्या मरीज ने अब तक कोई दवा ली है?","क्या मरीज को मधुमेह या उच्च रक्तचाप जैसी कोई पुरानी बीमारी है?","क्या मरीज सामान्य रूप से खा-पी सकता है?","क्या सांस लेने में कठिनाई या सीने में दर्द है?",`ASSESSMENT:\nSeverity: Moderate\nLikely condition: Viral fever with upper respiratory infection\nRecommended action: Teleconsult today\nDoctor brief: Patient presents with fever and mild respiratory symptoms. Vitals appear stable.\nCare advice: Keep hydrated, rest well, take paracetamol for fever. Monitor temperature every 4 hours.`],
+  },
+  chest: {
+    en: ["Where exactly is the chest pain — centre, left, or right side?","Is the pain crushing/squeezing, or sharp and stabbing?","Does the pain spread to the arm, jaw, or back?","Is the patient sweating, feeling dizzy, or short of breath?","How long has this pain been going on?","Does the patient have a history of heart disease or hypertension?","Has the patient taken any medication for this pain?",`ASSESSMENT:\nSeverity: Critical\nLikely condition: Suspected acute cardiac event (possible myocardial infarction)\nRecommended action: Emergency — call ambulance\nDoctor brief: Patient presents with chest pain with radiation and associated symptoms. High suspicion of cardiac event. Requires immediate emergency transfer and ECG.\nCare advice: Keep patient still and calm. Do NOT give food or water. Call 108 immediately. Aspirin 325mg if available and no allergy.`],
+    hi: ["सीने में दर्द ठीक कहाँ है — बीच में, बाईं ओर या दाईं ओर?","दर्द दबाने वाला है या चुभने वाला?","क्या दर्द हाथ, जबड़े या पीठ तक फैलता है?","क्या मरीज को पसीना, चक्कर या सांस में तकलीफ है?","यह दर्द कब से हो रहा है?","क्या मरीज को हृदय रोग या उच्च रक्तचाप है?","क्या मरीज ने दर्द के लिए कोई दवा ली है?",`ASSESSMENT:\nSeverity: Critical\nLikely condition: Suspected acute cardiac event\nRecommended action: Emergency — call ambulance\nDoctor brief: High suspicion of cardiac event. Immediate emergency transfer required.\nCare advice: मरीज को शांत रखें। खाना-पानी न दें। तुरंत 108 पर कॉल करें।`],
+  },
+  back: {
+    en: ["Where exactly is the back pain — upper, middle, or lower back?","Did the pain start after lifting something heavy or a fall?","On a scale of 1 to 10, how severe is the pain right now?","Does the pain shoot down the leg or cause numbness?","Is there any fever, burning urination, or swelling?","How long has this been going on?","Has the patient taken any pain relief medication?",`ASSESSMENT:\nSeverity: Mild\nLikely condition: Musculoskeletal back strain / lumbar spasm\nRecommended action: Home care\nDoctor brief: Patient presents with back pain, likely musculoskeletal. No neurological red flags identified.\nCare advice: Rest for 2–3 days. Apply warm compress. Paracetamol for pain. Avoid heavy lifting. Return if numbness develops.`],
+    hi: ["पीठ दर्द कहाँ है — ऊपर, बीच में या नीचे?","क्या दर्द भारी उठाने या गिरने से शुरू हुआ?","1 से 10 के बीच, अभी दर्द कितना तीव्र है?","क्या दर्द पैर तक जाता है या सुन्नपन होता है?","क्या बुखार, पेशाब में जलन या सूजन है?","यह कब से हो रहा है?","क्या मरीज ने दर्द निवारक दवा ली है?",`ASSESSMENT:\nSeverity: Mild\nLikely condition: Musculoskeletal back strain\nRecommended action: Home care\nDoctor brief: Likely musculoskeletal back pain. No neurological red flags.\nCare advice: 2–3 दिन आराम करें। गर्म सिकाई करें। पैरासिटामॉल लें।`],
+  },
+  diarrhoea: {
+    en: ["How many times has the patient passed loose stools today?","Is there any blood or mucus in the stools?","Is the patient vomiting as well?","Is the patient able to keep any fluids down?","Are there signs of dehydration — dry mouth, sunken eyes, no urination?","How long has this been going on?","Has the patient eaten anything unusual recently?",`ASSESSMENT:\nSeverity: Moderate\nLikely condition: Acute gastroenteritis with mild dehydration\nRecommended action: Teleconsult today\nDoctor brief: Patient presents with diarrhoea and possible dehydration. IV fluids may be required if oral rehydration fails.\nCare advice: Give ORS every 15 minutes. Avoid solid food for 4 hours. Seek immediate care if no urine for 6 hours or blood in stool.`],
+    hi: ["आज मरीज को कितनी बार दस्त हुए?","मल में खून या बलगम है?","क्या उल्टी भी हो रही है?","क्या मरीज पानी रख पा रहा है?","निर्जलीकरण के लक्षण हैं — मुँह सूखना, पेशाब न आना?","यह कब से हो रहा है?","क्या कुछ अलग खाया था?",`ASSESSMENT:\nSeverity: Moderate\nLikely condition: Acute gastroenteritis with mild dehydration\nRecommended action: Teleconsult today\nDoctor brief: Diarrhoea with possible dehydration. Assess hydration carefully.\nCare advice: हर 15 मिनट में ORS दें। 4 घंटे ठोस भोजन न दें। 6 घंटे पेशाब न आए तो अस्पताल जाएं।`],
+  },
+  headache: {
+    en: ["Where is the headache — front, sides, back of head, or all over?","On a scale of 1 to 10, how severe is it?","Did the headache come on suddenly or gradually?","Is there any fever, stiff neck, vomiting, or vision changes?","Is there sensitivity to light or noise?","Has the patient had headaches like this before?","Has the patient taken any medication?",`ASSESSMENT:\nSeverity: Mild\nLikely condition: Tension headache / migraine\nRecommended action: Home care\nDoctor brief: No red flag features. No sudden onset, no neck stiffness, no vision loss. Likely tension-type or migraine.\nCare advice: Rest in a quiet dark room. Paracetamol 500mg. Drink plenty of water. If sudden worst-ever headache or neck stiffness — go to hospital immediately.`],
+    hi: ["सिरदर्द कहाँ है — सामने, किनारों पर, पीछे या पूरे सिर में?","1 से 10 के बीच, दर्द कितना तीव्र है?","अचानक शुरू हुआ या धीरे-धीरे?","क्या बुखार, गर्दन में अकड़न, उल्टी या दृष्टि में बदलाव है?","क्या रोशनी या आवाज से परेशानी है?","क्या पहले भी ऐसा हुआ है?","क्या दवा ली है?",`ASSESSMENT:\nSeverity: Mild\nLikely condition: Tension headache / migraine\nRecommended action: Home care\nDoctor brief: No red flag features. Likely tension-type headache.\nCare advice: अंधेरे कमरे में आराम करें। पैरासिटामॉल 500mg लें। पानी पीएं।`],
+  },
+  cough: {
+    en: ["How long has the cough been present?","Is the cough dry or producing phlegm? If phlegm, what colour?","Is there any fever, chest pain, or shortness of breath?","Is the patient coughing up blood?","Does the patient smoke or live with a smoker?","Has the patient lost weight recently or had night sweats?","Has the patient taken any medication for the cough?",`ASSESSMENT:\nSeverity: Moderate\nLikely condition: Possible pulmonary tuberculosis — needs sputum test\nRecommended action: Teleconsult today\nDoctor brief: Prolonged cough with constitutional symptoms. TB suspicion raised. Sputum AFB smear and chest X-ray required. Refer to nearest DOTS centre.\nCare advice: Cover mouth when coughing. Separate utensils. Visit nearest PHC for free sputum test. Do NOT start antibiotics without test.`],
+    hi: ["खांसी कब से है?","खांसी सूखी है या बलगम के साथ?","क्या बुखार, सीने में दर्द या सांस में तकलीफ है?","क्या खून खांस रहा है?","क्या धूम्रपान करता है?","क्या वजन कम हुआ है या रात को पसीना आता है?","क्या दवा ली है?",`ASSESSMENT:\nSeverity: Moderate\nLikely condition: Possible pulmonary tuberculosis\nRecommended action: Teleconsult today\nDoctor brief: TB के लक्षण। तत्काल थूक परीक्षण और X-ray आवश्यक।\nCare advice: खांसते समय मुँह ढकें। निकटतम PHC में मुफ्त थूक परीक्षण कराएं।`],
+  },
+  pregnancy: {
+    en: ["How many weeks or months pregnant is the patient?","Is this her first pregnancy?","Is she experiencing pain, bleeding, or unusual discharge?","Has she been attending antenatal check-ups at the PHC?","Is the baby moving normally — is she feeling kicks?","Does she have swelling in feet, headache, or blurred vision?","Any history of previous pregnancy complications?",`ASSESSMENT:\nSeverity: Moderate\nLikely condition: Pregnancy — antenatal monitoring required\nRecommended action: Teleconsult today\nDoctor brief: Pregnant patient requires antenatal assessment. Check BP and urine protein to rule out pre-eclampsia. Ensure iron and folic acid supplementation.\nCare advice: Attend all antenatal visits. Take iron and folic acid daily. Go to hospital immediately if bleeding, severe headache, or reduced fetal movement.`],
+    hi: ["मरीज कितने महीनों की गर्भवती हैं?","क्या यह पहली गर्भावस्था है?","क्या दर्द, रक्तस्राव या असामान्य स्राव हो रहा है?","क्या PHC में प्रसवपूर्व जाँच के लिए जा रही हैं?","बच्चे की हलचल सामान्य है?","पैरों में सूजन, सिरदर्द या धुंधली दृष्टि है?","पिछली गर्भावस्था में कोई जटिलता थी?",`ASSESSMENT:\nSeverity: Moderate\nLikely condition: Pregnancy — antenatal monitoring required\nRecommended action: Teleconsult today\nDoctor brief: Pregnant patient needs antenatal assessment. Check BP and urine protein.\nCare advice: सभी जाँच में जाएं। रोज आयरन और फोलिक एसिड लें। रक्तस्राव पर तुरंत अस्पताल जाएं।`],
+  },
+  skin: {
+    en: ["Where on the body is the skin problem?","Is it a rash, itching, swelling, sores, or discolouration?","How long has it been present?","Is there any fever, joint pain, or discharge?","Has the patient been in contact with anyone with a similar rash?","Is it spreading or staying in the same area?","Has the patient tried any cream or remedy?",`ASSESSMENT:\nSeverity: Mild\nLikely condition: Contact dermatitis / fungal skin infection\nRecommended action: Home care\nDoctor brief: Localised skin condition. No systemic features. Likely contact dermatitis or superficial fungal infection.\nCare advice: Keep area clean and dry. Avoid scratching. Apply antifungal cream (clotrimazole) twice daily. Avoid sharing towels. Return if spreading or fever develops.`],
+    hi: ["शरीर के किस हिस्से में समस्या है?","यह दाने, खुजली, सूजन, घाव या रंग बदलाव है?","यह कब से है?","क्या बुखार, जोड़ों में दर्द या स्राव है?","किसी से संपर्क हुआ था जिसे ऐसे दाने हों?","यह फैल रहा है?","कोई क्रीम लगाई?",`ASSESSMENT:\nSeverity: Mild\nLikely condition: Contact dermatitis / fungal skin infection\nRecommended action: Home care\nDoctor brief: Localised skin condition. No systemic features.\nCare advice: क्षेत्र साफ और सूखा रखें। क्लोट्रिमाजोल क्रीम दिन में दो बार लगाएं।`],
+  },
+  eye: {
+    en: ["Which eye is affected — left, right, or both?","Is there redness, discharge, itching, or pain?","Is there any blurring of vision or sensitivity to light?","Did this start suddenly or gradually?","Has the patient been in contact with anyone with red eyes?","Is there any injury or foreign body in the eye?","Has the patient used any eye drops?",`ASSESSMENT:\nSeverity: Mild\nLikely condition: Acute conjunctivitis (pink eye)\nRecommended action: Home care\nDoctor brief: Red eye with discharge. Likely acute infective conjunctivitis. No vision loss or corneal involvement.\nCare advice: Clean eye with wet cloth inner to outer. Do not rub. Chloramphenicol eye drops 4x daily. Wash hands frequently.`],
+    hi: ["कौन सी आँख प्रभावित है?","क्या लालिमा, स्राव, खुजली या दर्द है?","क्या दृष्टि धुंधली है?","यह अचानक शुरू हुआ?","क्या लाल आँख वाले किसी व्यक्ति के संपर्क में आए?","आँख में चोट या कुछ गिरा है?","क्या आई ड्रॉप डाली है?",`ASSESSMENT:\nSeverity: Mild\nLikely condition: Acute conjunctivitis\nRecommended action: Home care\nDoctor brief: Likely acute infective conjunctivitis.\nCare advice: साफ कपड़े से आँख पोंछें। क्लोरामफेनिकॉल आई ड्रॉप दिन में 4 बार डालें।`],
+  },
+  child: {
+    en: ["How old is the child and what is their approximate weight?","What symptoms is the child showing — fever, rash, vomiting, or diarrhoea?","Is the child feeding or drinking normally?","Is the child unusually sleepy, limp, or not responding?","Is there any convulsion or seizure?","Is the child vaccinated — do you have the immunisation card?","How long have the symptoms been present?",`ASSESSMENT:\nSeverity: Moderate\nLikely condition: Acute febrile illness in child — needs assessment\nRecommended action: Teleconsult today\nDoctor brief: Paediatric patient with acute febrile illness. Assess for IMCI danger signs. Check hydration and feeding. Malaria RDT if in endemic area.\nCare advice: Give paracetamol syrup by weight. Keep child hydrated with ORS or breast milk. Seek immediate care if child becomes limp, unconscious, or has a fit.`],
+    hi: ["बच्चे की उम्र और वजन कितना है?","बच्चे में क्या लक्षण हैं — बुखार, दाने, उल्टी या दस्त?","क्या बच्चा सामान्य रूप से दूध/पानी पी रहा है?","क्या बच्चा असामान्य रूप से सुस्त है?","क्या दौरा पड़ा है?","क्या टीके लगे हैं?","ये लक्षण कब से हैं?",`ASSESSMENT:\nSeverity: Moderate\nLikely condition: Acute febrile illness in child\nRecommended action: Teleconsult today\nDoctor brief: Paediatric patient. Check IMCI danger signs.\nCare advice: वजन के अनुसार पैरासिटामॉल सिरप दें। ORS से हाइड्रेटेड रखें। बेहोशी या दौरे पर तुरंत अस्पताल जाएं।`],
+  },
+};
+
+const detectSymptom = (msg) => {
+  const m = (msg || "").toLowerCase();
+  if (/chest|heart|cardiac|सीना|सीने|छाती/.test(m)) return "chest";
+  if (/back|spine|lumbar|पीठ|पाठ/.test(m)) return "back";
+  if (/diarr|loose stool|motion|vomit|stomach|दस्त|उल्टी|जुलाब/.test(m)) return "diarrhoea";
+  if (/headache|migraine|head pain|सिरदर्द|डोकेदुखी/.test(m)) return "headache";
+  if (/cough|tb|tuberc|खांसी|खोकला/.test(m)) return "cough";
+  if (/pregnan|maternity|antenatal|delivery|गर्भ/.test(m)) return "pregnancy";
+  if (/skin|rash|itch|fungal|त्वचा/.test(m)) return "skin";
+  if (/eye|vision|conjunctiv|आँख/.test(m)) return "eye";
+  if (/child|baby|infant|toddler|बच्चा/.test(m)) return "child";
+  return "fever";
+};
+
+const detectRedFlags = (userMessages) => {
+  const combined = userMessages.join(" ").toLowerCase();
+  const flags = { critical: false, moderate: false, signals: [] };
+  if (/can'?t breathe|difficulty breath|shortness of breath|सांस नहीं|सांस में तकलीफ/.test(combined)) { flags.critical = true; flags.signals.push("breathing difficulty"); }
+  if (/unconscious|faint|collapse|बेहोश/.test(combined)) { flags.critical = true; flags.signals.push("loss of consciousness"); }
+  if (/blood|bleeding|खून/.test(combined)) { flags.critical = true; flags.signals.push("bleeding"); }
+  if (/convuls|seizure|fit|दौरा/.test(combined)) { flags.critical = true; flags.signals.push("seizure"); }
+  if (/\b(8|9|10)\s*(\/\s*10|out of)/.test(combined)) { flags.critical = true; flags.signals.push("severe pain (8-10/10)"); }
+  if (/\b(5|6|7)\s*(\/\s*10|out of)/.test(combined)) { flags.moderate = true; flags.signals.push("moderate pain (5-7/10)"); }
+  if (/diabetes|hypertens|heart disease|diabetic|मधुमेह|उच्च रक्तचाप/.test(combined)) { flags.moderate = true; flags.signals.push("chronic condition"); }
+  if (/3 days|4 days|5 days|week|तीन दिन|चार दिन|हफ्ते/.test(combined)) { flags.moderate = true; flags.signals.push("prolonged duration"); }
+  if (/no|not|can't|unable|नहीं/.test(combined) && /eat|drink|food|water|खाना|पानी/.test(combined)) { flags.moderate = true; flags.signals.push("unable to eat/drink"); }
+  return flags;
+};
+
+const topicPatterns = {
+  duration:    /how long|since when|कब से|ಎಷ್ಟು ದಿನ/i,
+  severity:    /scale|1 to 10|severe|intensity|तीव्र/i,
+  associated:  /other symptoms|also|cough|headache|associated|अन्य लक्षण/i,
+  medication:  /medicin|drug|tablet|pill|दवा|ಔಷಧ/i,
+  history:     /chronic|diabetes|hypertens|condition|पुरानी बीमारी/i,
+  eating:      /eat|drink|food|water|खाना|पानी/i,
+  breathing:   /breath|chest pain|सांस/i,
+  location:    /where|centre|left|right|upper|lower|कहाँ/i,
+  blood:       /blood|mucus|खून/i,
+  vomit:       /vomit|nausea|उल्टी/i,
+  stool:       /stool|loose|motion|दस्त/i,
+};
+
+const getTopicFromQ = (q) => {
+  for (const [topic, pattern] of Object.entries(topicPatterns)) {
+    if (pattern.test(q)) return topic;
+  }
+  return null;
+};
+
+const userAnsweredTopic = (topic, userMsgs) => {
+  if (!topic) return false;
+  const combined = userMsgs.join(" ").toLowerCase();
+  const kwds = {
+    duration: /day|week|hour|since|ago|कल|आज|दिन/, severity: /\d|mild|severe|bad/, associated: /yes|no|also|हाँ|नहीं/,
+    medication: /yes|no|tablet|हाँ|नहीं|दवा/, history: /yes|no|diabetic|हाँ|नहीं/, eating: /yes|no|little|nothing|हाँ|नहीं/,
+    breathing: /yes|no|हाँ|नहीं/, location: /left|right|centre|middle|upper|lower|बाईं|दाईं/,
+    blood: /yes|no|हाँ|नहीं|blood|खून/, vomit: /yes|no|हाँ|नहीं/, stool: /\d|times|बार/,
+  };
+  return kwds[topic]?.test(combined) && userMsgs.length > 0;
+};
+
+const buildDynamicAssessment = (symptomKey, lang, flags) => {
+  const base = mockScripts[symptomKey];
+  const baseScript = base[lang] || base.en;
+  const canned = baseScript[baseScript.length - 1];
+  if (!flags.critical && !flags.moderate) return canned;
+  const lines = canned.split("\n").map(l => l.trim()).filter(Boolean);
+  const get = (key) => { const l = lines.find(l => l.toLowerCase().startsWith(key.toLowerCase() + ":")); return l ? l.split(":").slice(1).join(":").trim() : ""; };
+  const severity = flags.critical ? "Critical" : "Moderate";
+  const action = flags.critical ? "Emergency — call ambulance" : "Teleconsult today";
+  const doctorBrief = flags.critical
+    ? `RED FLAGS detected: ${flags.signals.join(", ")}. ${get("Doctor brief")}`
+    : `${get("Doctor brief")} Note: ${flags.signals.join(", ")} reported.`;
+  const careAdvice = flags.critical
+    ? `URGENT: ${flags.signals.join(", ")} detected. Call 108 immediately. ${get("Care advice")}`
+    : get("Care advice");
+  return `ASSESSMENT:\nSeverity: ${severity}\nLikely condition: ${get("Likely condition")}\nRecommended action: ${action}\nDoctor brief: ${doctorBrief}\nCare advice: ${careAdvice}`;
+};
+
+let _detectedSymptom = null;
+let _askedIndices = [];
+let _sessionUserMsgs = [];
+
+const getMockResponse = (lang, messageIndex, firstUserMessage, allMessages) => {
+  if (messageIndex === 0) { _detectedSymptom = detectSymptom(firstUserMessage); _askedIndices = []; _sessionUserMsgs = []; }
+  if (allMessages) { _sessionUserMsgs = allMessages.filter(m => m.role === "user").map(m => m.content); }
+  else if (firstUserMessage) { _sessionUserMsgs = [firstUserMessage]; }
+  const key = _detectedSymptom || "fever";
+  const script = mockScripts[key];
+  const responses = script[lang] || script.en;
+  const questions = responses.slice(0, -1);
+  const flags = detectRedFlags(_sessionUserMsgs);
+  if (flags.critical && _askedIndices.length >= 2) return buildDynamicAssessment(key, lang, flags);
+  if (messageIndex >= questions.length || _askedIndices.length >= questions.length) return buildDynamicAssessment(key, lang, flags);
+  for (let i = 0; i < questions.length; i++) {
+    if (_askedIndices.includes(i)) continue;
+    const topic = getTopicFromQ(questions[i]);
+    if (topic && userAnsweredTopic(topic, _sessionUserMsgs.slice(0, -1))) continue;
+    _askedIndices.push(i);
+    return questions[i];
+  }
+  return buildDynamicAssessment(key, lang, flags);
+};
+
+const USE_MOCK_AI = true;
+
+
+
+// ── TTS Hook — robust cross-browser ──────────────────────────
+const useTTS = (lang) => {
+  const synthRef = React.useRef(null);
+  const langCode = langVoice[lang] || "en-IN";
+
+  const speak = React.useCallback((text, onEnd) => {
+    if (!("speechSynthesis" in window)) { onEnd && onEnd(); return; }
+    window.speechSynthesis.cancel();
+    if (!text) { onEnd && onEnd(); return; }
+
+    const clean = text.includes("ASSESSMENT:") ? "Assessment complete. Please review the results." : text;
+    const utter = new SpeechSynthesisUtterance(clean);
+    utter.lang = langCode;
+    utter.rate = 0.88;
+    utter.pitch = 1.0;
+
+    utter.onend = () => { onEnd && onEnd(); };
+    utter.onerror = (e) => { if (e.error !== "interrupted") console.warn("TTS:", e.error); onEnd && onEnd(); };
+
+    const doSpeak = () => {
+      const voices = window.speechSynthesis.getVoices();
+      const langPrefix = langCode.split("-")[0];
+      const match = voices.find(v => v.lang === langCode)
+        || voices.find(v => v.lang.startsWith(langPrefix))
+        || voices.find(v => v.lang.includes("IN"))
+        || null;
+      if (match) utter.voice = match;
+      window.speechSynthesis.speak(utter);
+    };
+
+    const voices = window.speechSynthesis.getVoices();
+    if (voices.length > 0) { doSpeak(); }
+    else { window.speechSynthesis.onvoiceschanged = doSpeak; }
+
+    synthRef.current = utter;
+  }, [langCode]);
+
+  const stop = React.useCallback(() => {
+    window.speechSynthesis?.cancel();
+  }, []);
+
+  return { speak, stop };
+};
+
+
+
+const Pill = ({ label, color, bg }) => (
+  <span style={{
+    fontSize: "11px",
+    fontWeight: 600,
+    padding: "3px 10px",
+    borderRadius: "20px",
+    background: bg,
+    color,
+    letterSpacing: "0.03em",
+  }}>
+    {label}
+  </span>
+);
+
+
+
+const Btn = ({ label, icon, onClick, variant = "primary", style: s = {}, disabled = false }) => {
+  const [pressed, setPressed] = React.useState(false);
+  const variants = {
+    primary: { background: "#7C6FE0", color: "#fff" },
+    danger: { background: "#F05454", color: "#fff" },
+    ghost: { background: "transparent", color: "#EEEAF8", border: "1px solid #2E2C45" },
+    green: { background: "#4CAF7D", color: "#fff" },
+    amber: { background: "#F0A500", color: "#fff" },
+  };
+  return (
+    <button
+      onClick={onClick}
+      disabled={disabled}
+      onMouseDown={() => setPressed(true)}
+      onMouseUp={() => setPressed(false)}
+      onTouchStart={() => setPressed(true)}
+      onTouchEnd={() => setPressed(false)}
+      style={{
+        ...variants[variant],
+        border: variant === "ghost" ? "1px solid #2E2C45" : "none",
+        borderRadius: "14px",
+        padding: "14px 20px",
+        fontSize: "14px",
+        fontWeight: 600,
+        cursor: disabled ? "default" : "pointer",
+        display: "flex",
+        alignItems: "center",
+        justifyContent: "center",
+        gap: "8px",
+        width: "100%",
+        opacity: disabled ? 0.4 : pressed ? 0.85 : 1,
+        transform: pressed ? "scale(0.98)" : "scale(1)",
+        transition: "all 0.1s",
+        ...s,
+      }}
+    >
+      {icon && <span style={{ fontSize: "16px" }}>{icon}</span>}
+      {label}
+    </button>
+  );
+};
+
+
+
+const TopBar = ({ title, onBack, right, theme: t }) => (
+  <div style={{ padding: "8px 20px 12px", display: "flex", alignItems: "center", gap: "12px", flexShrink: 0 }}>
+    {onBack && (
+      <button
+        onClick={onBack}
+        style={{
+          background: t.surfaceHigh,
+          border: "none",
+          borderRadius: "10px",
+          width: "34px",
+          height: "34px",
+          display: "flex",
+          alignItems: "center",
+          justifyContent: "center",
+          cursor: "pointer",
+          color: t.text,
+          fontSize: "18px",
+          flexShrink: 0,
+        }}
+      >
+        ‹
+      </button>
+    )}
+    <span style={{ fontSize: "16px", fontWeight: 600, color: t.text, flex: 1 }}>{title}</span>
+    {right}
+  </div>
+);
+
+
+
+const OfflineBanner = ({ lang }) => (
+  <div style={{
+    background: "#221800",
+    borderBottom: "1px solid #F0A500",
+    padding: "6px 20px",
+    display: "flex",
+    alignItems: "center",
+    gap: "8px",
+    flexShrink: 0,
+  }}>
+    <span style={{ fontSize: "12px" }}>📡</span>
+    <span style={{ fontSize: "11px", color: "#F0A500", fontWeight: 600 }}>
+      {T[lang]?.offline || T.en.offline}
+    </span>
+  </div>
+);
+
+
+
+// ── Gemini-style animated orb mic ─────────────────────────────
+const GeminiOrb = ({ state, onClick, disabled, lang, tx }) => {
+  const isActive = state !== "idle";
+  const gradients = {
+    idle:       "conic-gradient(from 0deg at 50% 50%, #4285F4 0deg, #9C27B0 90deg, #F4511E 180deg, #34A853 270deg, #4285F4 360deg)",
+    listening:  "conic-gradient(from 0deg at 50% 50%, #F4511E 0deg, #FF7043 90deg, #FFCA28 180deg, #F4511E 360deg)",
+    processing: "conic-gradient(from 0deg at 50% 50%, #FFCA28 0deg, #FFD54F 90deg, #FFF176 180deg, #FFCA28 360deg)",
+    speaking:   "conic-gradient(from 0deg at 50% 50%, #34A853 0deg, #66BB6A 90deg, #A5D6A7 180deg, #34A853 360deg)",
+  };
+  const labels = {
+    idle:       tx("tapToSpeak"),
+    listening:  tx("tapToStop"),
+    processing: tx("processing"),
+    speaking:   "AI SPEAKING",
+  };
+
+  return (
+    <div style={{ display: "flex", flexDirection: "column", alignItems: "center", gap: "12px" }}>
+      <div style={{ position: "relative", width: "92px", height: "92px" }}>
+        {isActive && (
+          <>
+            <div style={{
+              position: "absolute", inset: "-16px", borderRadius: "50%",
+              background: state === "listening" ? "radial-gradient(circle, rgba(244,81,30,0.2) 0%, transparent 70%)"
+                : state === "processing" ? "radial-gradient(circle, rgba(255,202,40,0.2) 0%, transparent 70%)"
+                : "radial-gradient(circle, rgba(52,168,83,0.2) 0%, transparent 70%)",
+              animation: "geminiPulseOuter 2s ease-in-out infinite",
+              pointerEvents: "none",
+            }} />
+            <div style={{
+              position: "absolute", inset: "-8px", borderRadius: "50%",
+              background: state === "listening" ? "radial-gradient(circle, rgba(244,81,30,0.15) 0%, transparent 70%)"
+                : state === "processing" ? "radial-gradient(circle, rgba(255,202,40,0.15) 0%, transparent 70%)"
+                : "radial-gradient(circle, rgba(52,168,83,0.15) 0%, transparent 70%)",
+              animation: "geminiPulseInner 2s 0.3s ease-in-out infinite",
+              pointerEvents: "none",
+            }} />
+          </>
+        )}
+        <button
+          onClick={onClick}
+          disabled={disabled || state === "processing"}
+          style={{
+            width: "92px", height: "92px", borderRadius: "50%", border: "none",
+            cursor: (disabled || state === "processing") ? "not-allowed" : "pointer",
+            position: "relative", overflow: "hidden",
+            opacity: disabled ? 0.4 : 1,
+            transition: "transform 0.3s cubic-bezier(.34,1.56,.64,1)",
+            transform: state === "listening" ? "scale(1.08)" : state === "processing" ? "scale(0.94)" : "scale(1)",
+            padding: 0, outline: "none",
+          }}
+        >
+          <div style={{
+            position: "absolute", inset: 0, borderRadius: "50%",
+            background: gradients[state] || gradients.idle,
+            animation: state === "listening" ? "geminiRotate 2s linear infinite"
+              : state === "processing" ? "geminiRotate 0.8s linear infinite"
+              : state === "speaking" ? "geminiRotate 4s linear infinite"
+              : "geminiRotate 8s linear infinite",
+          }} />
+          <div style={{
+            position: "absolute", inset: "2px", borderRadius: "50%",
+            background: "radial-gradient(circle at 35% 25%, rgba(255,255,255,0.32) 0%, rgba(255,255,255,0.08) 40%, transparent 70%)",
+          }} />
+          <div style={{
+            position: "absolute", inset: "6px", borderRadius: "50%",
+            background: "rgba(0,0,0,0.18)", backdropFilter: "blur(2px)",
+            display: "flex", alignItems: "center", justifyContent: "center",
+          }}>
+            {state === "idle" && (
+              <svg width="28" height="28" viewBox="0 0 24 24" fill="none">
+                <rect x="9" y="2" width="6" height="12" rx="3" fill="white" opacity="0.95"/>
+                <path d="M5 10c0 3.866 3.134 7 7 7s7-3.134 7-7" stroke="white" strokeWidth="2" strokeLinecap="round" fill="none" opacity="0.95"/>
+                <line x1="12" y1="17" x2="12" y2="21" stroke="white" strokeWidth="2" strokeLinecap="round" opacity="0.95"/>
+                <line x1="9" y1="21" x2="15" y2="21" stroke="white" strokeWidth="2" strokeLinecap="round" opacity="0.95"/>
+              </svg>
+            )}
+            {state === "listening" && (
+              <svg width="28" height="28" viewBox="0 0 24 24" fill="none" style={{ animation: "geminiWavePulse 0.6s ease-in-out infinite alternate" }}>
+                <rect x="11" y="8" width="2" height="8" rx="1" fill="white" opacity="0.95"/>
+                <rect x="7" y="10" width="2" height="4" rx="1" fill="white" opacity="0.7"/>
+                <rect x="15" y="10" width="2" height="4" rx="1" fill="white" opacity="0.7"/>
+                <rect x="3" y="11" width="2" height="2" rx="1" fill="white" opacity="0.4"/>
+                <rect x="19" y="11" width="2" height="2" rx="1" fill="white" opacity="0.4"/>
+              </svg>
+            )}
+            {state === "processing" && (
+              <div style={{ display: "flex", gap: "4px", alignItems: "center" }}>
+                {[0,1,2].map(i => (
+                  <div key={i} style={{
+                    width: "5px", height: "5px", borderRadius: "50%", background: "white", opacity: 0.9,
+                    animation: `geminiBounce 0.8s ${i * 0.15}s ease-in-out infinite`,
+                  }} />
+                ))}
+              </div>
+            )}
+            {state === "speaking" && (
+              <svg width="28" height="28" viewBox="0 0 24 24" fill="none">
+                <path d="M11 5L6 9H2v6h4l5 4V5z" fill="white" opacity="0.95"/>
+                <path d="M15.54 8.46a5 5 0 0 1 0 7.07" stroke="white" strokeWidth="2" strokeLinecap="round" fill="none" opacity="0.9"/>
+                <path d="M19.07 4.93a10 10 0 0 1 0 14.14" stroke="white" strokeWidth="2" strokeLinecap="round" fill="none" opacity="0.6"/>
+              </svg>
+            )}
+          </div>
+        </button>
+      </div>
+      <div style={{ textAlign: "center" }}>
+        <div style={{
+          fontSize: "10px", fontWeight: 700, letterSpacing: "0.08em",
+          color: state === "idle" ? "#8B87A8" : state === "listening" ? "#F4511E" : state === "processing" ? "#FFCA28" : "#34A853",
+          transition: "color 0.3s",
+        }}>
+          {labels[state]}
+        </div>
+        <div style={{ fontSize: "10px", color: "#504E6A", marginTop: "2px" }}>{langLabel[lang] || "English"}</div>
+      </div>
+    </div>
+  );
+};
+
+
+
+const Login = ({ onLogin, onSkip, initialLang }) => {
+  const [role, setRole] = React.useState("asha");
+  const [phone, setPhone] = React.useState("");
+  const [otpSent, setOtpSent] = React.useState(false);
+  const [otp, setOtp] = React.useState("");
+  const [lang, setLang] = React.useState(initialLang || "en");
+  const [loading, setLoading] = React.useState(false);
+  const [otpError, setOtpError] = React.useState(false);
+  const tx = (key) => T[lang]?.[key] || T.en[key] || key;
+
+  const languages = [
+    { code: "en", label: "English" }, { code: "hi", label: "हिन्दी" },
+    { code: "kn", label: "ಕನ್ನಡ" }, { code: "ta", label: "தமிழ்" },
+    { code: "te", label: "తెలుగు" }, { code: "mr", label: "मराठी" },
+  ];
+
+  const handleSendOTP = () => {
+    if (phone.length < 10) return;
+    setLoading(true);
+    setTimeout(() => { setLoading(false); setOtpSent(true); }, 1000);
+  };
+
+  const handleVerify = () => {
+    if (otp === "123456") {
+      try { localStorage.setItem("sahayak_lang", lang); } catch {}
+      onLogin({ role, phone, lang });
+    } else {
+      setOtpError(true);
+      setTimeout(() => setOtpError(false), 1500);
+    }
+  };
+
+  const roles = [
+    { id: "asha", label: tx("ashaWorker") },
+    { id: "doctor", label: tx("doctor") },
+    { id: "admin", label: tx("admin") },
+  ];
+
+  return (
+    <div style={{ flex: 1, display: "flex", flexDirection: "column", background: "#0F0E17", overflowY: "auto" }}>
+      <div style={{
+        background: "linear-gradient(160deg, #1E1B38 0%, #0F0E17 60%)",
+        padding: "40px 28px 28px", position: "relative", overflow: "hidden", flexShrink: 0,
+      }}>
+        <div style={{
+          position: "absolute", top: -40, right: -40, width: "180px", height: "180px",
+          borderRadius: "50%", background: "radial-gradient(circle, rgba(124,111,224,0.15) 0%, transparent 70%)",
+        }} />
+        <div style={{ display: "flex", alignItems: "center", gap: "12px", marginBottom: "24px" }}>
+          <div style={{
+            width: "44px", height: "44px", borderRadius: "12px",
+            background: "linear-gradient(135deg, #7C6FE0, #A99DF5)",
+            display: "flex", alignItems: "center", justifyContent: "center", fontSize: "22px",
+          }}>🏥</div>
+          <div>
+            <div style={{ fontSize: "18px", fontWeight: 700, color: "#EEEAF8" }}>{T[lang]?.appName || "Sahayak"}</div>
+            <div style={{ fontSize: "11px", color: "#8B87A8", marginTop: "3px" }}>{T[lang]?.appSubtitle || T.en.appSubtitle}</div>
+          </div>
+        </div>
+        <h2 style={{ margin: "0 0 4px", fontSize: "24px", fontWeight: 700, color: "#EEEAF8" }}>{tx("loginTitle")}</h2>
+        <p style={{ margin: 0, fontSize: "13px", color: "#8B87A8" }}>{tx("loginSubtitle")}</p>
+      </div>
+      <div style={{ flex: 1, padding: "20px 24px", display: "flex", flexDirection: "column", gap: "16px" }}>
+        <div>
+          <div style={{ fontSize: "12px", fontWeight: 600, color: "#8B87A8", marginBottom: "8px", letterSpacing: "0.04em" }}>{tx("selectRole")}</div>
+          <div style={{ display: "flex", gap: "8px" }}>
+            {roles.map(r => (
+              <button key={r.id} onClick={() => setRole(r.id)} style={{
+                flex: 1, padding: "10px 6px", borderRadius: "12px",
+                border: `1px solid ${role === r.id ? "#7C6FE0" : "#2E2C45"}`,
+                background: role === r.id ? "#1E1B38" : "#1A1928",
+                color: role === r.id ? "#A99DF5" : "#8B87A8",
+                fontSize: "12px", fontWeight: 600, cursor: "pointer",
+              }}>{r.label}</button>
+            ))}
+          </div>
+        </div>
+        <div>
+          <div style={{ fontSize: "12px", fontWeight: 600, color: "#8B87A8", marginBottom: "8px" }}>{tx("phoneNumber")}</div>
+          <div style={{ display: "flex", gap: "8px" }}>
+            <div style={{
+              background: "#232235", border: "1px solid #2E2C45", borderRadius: "12px",
+              padding: "12px 14px", fontSize: "14px", color: "#8B87A8", fontWeight: 600, flexShrink: 0,
+            }}>+91</div>
+            <input
+              type="tel" value={phone}
+              onChange={e => setPhone(e.target.value.replace(/\D/g, "").slice(0, 10))}
+              placeholder="9876543210"
+              style={{
+                flex: 1, background: "#232235", border: "1px solid #2E2C45", borderRadius: "12px",
+                padding: "12px 14px", fontSize: "14px", color: "#EEEAF8", outline: "none", boxSizing: "border-box",
+              }}
+            />
+          </div>
+        </div>
+        {!otpSent ? (
+          <Btn label={loading ? "Sending..." : tx("sendOTP")} onClick={handleSendOTP} disabled={phone.length < 10 || loading} />
+        ) : (
+          <>
+            <div>
+              <div style={{ fontSize: "12px", fontWeight: 600, color: "#8B87A8", marginBottom: "8px" }}>
+                {tx("enterOTP")} <span style={{ color: "#4CAF7D" }}>(Demo: 123456)</span>
+              </div>
+              <input
+                type="tel" value={otp}
+                onChange={e => setOtp(e.target.value.replace(/\D/g, "").slice(0, 6))}
+                placeholder="• • • • • •"
+                style={{
+                  width: "100%", background: otpError ? "#220D0D" : "#232235",
+                  border: `1px solid ${otpError ? "#F05454" : "#2E2C45"}`,
+                  borderRadius: "12px", padding: "14px", fontSize: "20px", color: "#EEEAF8",
+                  outline: "none", boxSizing: "border-box", letterSpacing: "8px", textAlign: "center",
+                }}
+              />
+              {otpError && <div style={{ fontSize: "12px", color: "#F05454", marginTop: "6px" }}>Incorrect OTP. Try 123456</div>}
+            </div>
+            <Btn label={tx("verifyOTP")} onClick={handleVerify} disabled={otp.length < 6} />
+          </>
+        )}
+        <button onClick={onSkip} style={{ background: "none", border: "none", color: "#504E6A", fontSize: "13px", cursor: "pointer", padding: "8px", textAlign: "center" }}>
+          {tx("skipDemo")}
+        </button>
+        <div style={{ marginTop: "auto" }}>
+          <div style={{ fontSize: "12px", fontWeight: 600, color: "#8B87A8", marginBottom: "8px", textAlign: "center" }}>{tx("language")}</div>
+          <div style={{ display: "flex", flexWrap: "wrap", gap: "6px", justifyContent: "center" }}>
+            {languages.map(l => (
+              <button key={l.code} onClick={() => setLang(l.code)} style={{
+                padding: "6px 14px", borderRadius: "20px",
+                border: `1px solid ${lang === l.code ? "#7C6FE0" : "#2E2C45"}`,
+                background: lang === l.code ? "#1E1B38" : "transparent",
+                color: lang === l.code ? "#A99DF5" : "#504E6A",
+                fontSize: "12px", fontWeight: 600, cursor: "pointer",
+              }}>{l.label}</button>
+            ))}
+          </div>
+        </div>
+      </div>
+    </div>
+  );
+};
+
+
+
+const Dashboard = ({ onNewCase, onPatient, onSettings, t, lang }) => {
+  const tx = (key) => T[lang]?.[key] || T.en[key] || key;
+  const sm = severityMap(t);
+  return (
+    <div style={{ flex: 1, overflow: "hidden", display: "flex", flexDirection: "column" }}>
+      <div style={{ padding: "4px 20px 16px", display: "flex", justifyContent: "space-between", alignItems: "flex-start" }}>
+        <div>
+          <p style={{ margin: 0, fontSize: "13px", color: t.textSub }}>{tx("goodMorning")}</p>
+          <h1 style={{ margin: "2px 0 0", fontSize: "20px", fontWeight: 700, color: t.text }}>Priya (ASHA Worker)</h1>
+          <p style={{ margin: "4px 0 0", fontSize: "12px", color: t.textMuted }}>Rampur & Satna villages · 48 registered</p>
+        </div>
+        <button onClick={onSettings} style={{
+          background: t.surfaceHigh, border: `1px solid ${t.border}`, borderRadius: "10px",
+          width: "36px", height: "36px", display: "flex", alignItems: "center", justifyContent: "center",
+          cursor: "pointer", fontSize: "16px", flexShrink: 0,
+        }}>⚙️</button>
+      </div>
+      <div style={{ display: "grid", gridTemplateColumns: "1fr 1fr 1fr", gap: "10px", padding: "0 20px 16px" }}>
+        {[["48", tx("registered")], ["6", tx("thisWeek")], ["1", tx("critical")]].map(([num, lbl]) => (
+          <div key={lbl} style={{ background: t.surfaceHigh, borderRadius: "14px", padding: "12px", border: `1px solid ${t.border}` }}>
+            <div style={{ fontSize: "22px", fontWeight: 700, color: t.text }}>{num}</div>
+            <div style={{ fontSize: "11px", color: t.textSub, marginTop: "2px" }}>{lbl}</div>
+          </div>
+        ))}
+      </div>
+      <div style={{ padding: "0 20px 12px" }}><Btn label={tx("newCase")} onClick={onNewCase} /></div>
+      <div style={{ padding: "0 20px 8px", display: "flex", justifyContent: "space-between", alignItems: "center" }}>
+        <span style={{ fontSize: "13px", fontWeight: 600, color: t.text }}>{tx("recentCases")}</span>
+        <span style={{ fontSize: "12px", color: t.accent }}>{tx("seeAll")}</span>
+      </div>
+      <div style={{ flex: 1, overflowY: "auto", padding: "0 20px 20px", display: "flex", flexDirection: "column", gap: "8px" }}>
+        {patients.map(p => (
+          <div key={p.id} onClick={() => onPatient(p)} style={{
+            background: t.surfaceHigh, borderRadius: "16px", padding: "12px 14px",
+            border: `1px solid ${t.border}`, cursor: "pointer",
+            display: "flex", alignItems: "center", gap: "12px",
+          }}>
+            <div style={{
+              width: "40px", height: "40px", borderRadius: "50%", background: t.accentBg,
+              display: "flex", alignItems: "center", justifyContent: "center", fontSize: "18px",
+              flexShrink: 0, fontWeight: 700, color: t.accentLight,
+            }}>{p.name[0]}</div>
+            <div style={{ flex: 1, minWidth: 0 }}>
+              <div style={{ display: "flex", alignItems: "center", gap: "8px", marginBottom: "3px" }}>
+                <span style={{ fontSize: "14px", fontWeight: 600, color: t.text }}>{p.name}</span>
+                <Pill label={sm[p.severity]?.label || "Mild"} color={sm[p.severity]?.color} bg={sm[p.severity]?.bg} />
+              </div>
+              <div style={{ fontSize: "12px", color: t.textSub, whiteSpace: "nowrap", overflow: "hidden", textOverflow: "ellipsis" }}>
+                {p.symptom} · {p.village}
+              </div>
+            </div>
+            <span style={{ fontSize: "11px", color: t.textMuted, flexShrink: 0 }}>{p.time}</span>
+          </div>
+        ))}
+      </div>
+    </div>
+  );
+};
+
+
+
+const NewPatient = ({ onStart, onBack, t, lang }) => {
+  const [name, setName] = React.useState("");
+  const [age, setAge] = React.useState("");
+  const [village, setVillage] = React.useState("Rampur");
+  const [ayushmanCard, setAyushmanCard] = React.useState(null); // null=unknown, true=has card, false=no card
+  const tx = (key) => T[lang]?.[key] || T.en[key] || key;
+
+  const field = (label, val, set, placeholder, type = "text") => (
+    <div style={{ marginBottom: "12px" }}>
+      <div style={{ fontSize: "12px", fontWeight: 600, color: t.textSub, marginBottom: "5px" }}>{label}</div>
+      <input
+        type={type} value={val} onChange={e => set(e.target.value)} placeholder={placeholder}
+        style={{
+          width: "100%", background: t.surfaceHigh, border: `1px solid ${t.border}`,
+          borderRadius: "12px", padding: "12px 14px", fontSize: "14px", color: t.text,
+          outline: "none", boxSizing: "border-box",
+        }}
+      />
+    </div>
+  );
+
+  return (
+    <div style={{ flex: 1, overflow: "hidden", display: "flex", flexDirection: "column" }}>
+      <TopBar title={tx("newPatient")} onBack={onBack} theme={t} />
+      <div style={{ flex: 1, overflowY: "auto", padding: "0 20px 20px" }}>
+        {field(tx("patientName"), name, setName, "e.g. Savitri Devi")}
+        {field(tx("age"), age, setAge, "e.g. 45", "number")}
+        <div style={{ marginBottom: "16px" }}>
+          <div style={{ fontSize: "12px", fontWeight: 600, color: t.textSub, marginBottom: "5px" }}>{tx("village")}</div>
+          <div style={{ display: "flex", gap: "8px" }}>
+            {["Rampur", "Satna", "Other"].map(v => (
+              <button key={v} onClick={() => setVillage(v)} style={{
+                flex: 1, padding: "10px", borderRadius: "10px",
+                border: `1px solid ${village === v ? t.accent : t.border}`,
+                background: village === v ? t.accentBg : t.surfaceHigh,
+                color: village === v ? t.accentLight : t.textSub,
+                fontSize: "13px", fontWeight: 600, cursor: "pointer",
+              }}>{v}</button>
+            ))}
+          </div>
+        </div>
+        <div style={{ marginBottom: "20px" }}>
+          <div style={{ fontSize: "12px", fontWeight: 600, color: t.textSub, marginBottom: "8px" }}>🏛️ Ayushman Bharat Card</div>
+          <div style={{ display: "flex", gap: "8px" }}>
+            {[
+              { val: true, label: "✅ Has Card", col: t.green, bg: t.greenBg },
+              { val: false, label: "❌ No Card", col: t.red, bg: t.redBg },
+              { val: null, label: "❓ Unknown", col: t.textSub, bg: t.surfaceHigh },
+            ].map(opt => (
+              <button key={String(opt.val)} onClick={() => setAyushmanCard(opt.val)} style={{
+                flex: 1, padding: "10px 6px", borderRadius: "10px",
+                border: `1px solid ${ayushmanCard === opt.val ? opt.col : t.border}`,
+                background: ayushmanCard === opt.val ? opt.bg : t.surfaceHigh,
+                color: ayushmanCard === opt.val ? opt.col : t.textSub,
+                fontSize: "11px", fontWeight: 600, cursor: "pointer",
+              }}>{opt.label}</button>
+            ))}
+          </div>
+        </div>
+        <Btn
+          label={tx("startAssessment")}
+          onClick={() => name && age && onStart({
+            id: Date.now(), name, age: parseInt(age), village, ayushmanCard,
+            severity: "green", symptom: "", time: "Now", history: [],
+          })}
+          disabled={!name || !age}
+        />
+      </div>
+    </div>
+  );
+};
+
+
+
+const SymptomChat = ({ patient, onComplete, onBack, t, lang }) => {
+  const tx = (key) => T[lang]?.[key] || T.en[key] || key;
+  const SYSTEM_PROMPT = buildSystemPrompt(lang, patient.name, patient.age, patient.village);
+
+  const openingByLang = {
+    en: `Hello! I'm here to help assess ${patient.name}. What is their main complaint today?`,
+    hi: `नमस्ते! मैं ${patient.name} की जांच में मदद करूंगा। आज उनकी मुख्य समस्या क्या है?`,
+    kn: `ನಮಸ್ಕಾರ! ನಾನು ${patient.name} ರ ತಪಾಸಣೆಯಲ್ಲಿ ಸಹಾಯ ಮಾಡುತ್ತೇನೆ. ಇಂದು ಅವರ ಮುಖ್ಯ ಸಮಸ್ಯೆ ಏನು?`,
+    ta: `வணக்கம்! ${patient.name} ஐ மதிப்பிட உதவுகிறேன். இன்று அவர்களின் முக்கிய பிரச்சனை என்ன?`,
+    te: `నమస్కారం! ${patient.name} కోసం అసెస్‌మెంట్ చేయడంలో సహాయం చేస్తాను. నేడు వారి ప్రధాన సమస్య ఏమిటి?`,
+    mr: `नमस्कार! मी ${patient.name} यांच्या तपासणीत मदत करेन. आज त्यांची मुख्य तक्रार काय आहे?`,
+  };
+
+  const [messages, setMessages] = React.useState([
+    { role: "assistant", content: openingByLang[lang] || openingByLang.en }
+  ]);
+  const [input, setInput] = React.useState("");
+  const [loading, setLoading] = React.useState(false);
+  const [assessment, setAssessment] = React.useState(null);
+  const [voiceState, setVoiceState] = React.useState("idle");
+  const [liveTranscript, setLiveTranscript] = React.useState("");
+  const [voiceSupported, setVoiceSupported] = React.useState(true);
+  const [micBlocked, setMicBlocked] = React.useState(false);
+
+  const bottomRef = React.useRef();
+  const recognitionRef = React.useRef(null);
+  const finalTranscriptRef = React.useRef("");
+  const isRecognizingRef = React.useRef(false);
+
+  const { speak, stop: stopTTS } = useTTS(lang);
+
+  // Create ONE recognition instance for the whole session to avoid repeated mic permission prompts
+  React.useEffect(() => {
+    const SR = window.SpeechRecognition || window.webkitSpeechRecognition;
+    if (!SR) { setVoiceSupported(false); return; }
+    const rec = new SR();
+    rec.continuous = false;
+    rec.interimResults = true;
+    rec.maxAlternatives = 1;
+    recognitionRef.current = rec;
+    return () => { try { rec.abort(); } catch {} };
+  }, []);
+
+  React.useEffect(() => {
+    bottomRef.current?.scrollIntoView({ behavior: "smooth" });
+  }, [messages, loading, liveTranscript]);
+
+  React.useEffect(() => {
+    const timer = setTimeout(() => {
+      setVoiceState("speaking");
+      speak(openingByLang[lang] || openingByLang.en, () => setVoiceState("idle"));
+    }, 600);
+    return () => clearTimeout(timer);
+  }, []);
+
+  const parseAssessment = (text) => {
+    if (!text.includes("ASSESSMENT:")) return null;
+    const lines = text.split("\n").map(l => l.trim()).filter(Boolean);
+    const get = (key) => {
+      const line = lines.find(l => l.toLowerCase().startsWith(key.toLowerCase() + ":"));
+      return line ? line.split(":").slice(1).join(":").trim() : "";
+    };
+    return {
+      severity: get("Severity"),
+      condition: get("Likely condition"),
+      action: get("Recommended action"),
+      doctorBrief: get("Doctor brief"),
+      careAdvice: get("Care advice"),
+    };
+  };
+
+  const sendMessage = React.useCallback(async (text) => {
+    if (!text?.trim() || loading) return;
+    stopTTS();
+    isRecognizingRef.current = false;
+    finalTranscriptRef.current = "";
+    setLiveTranscript("");
+    setVoiceState("idle");
+    setInput("");
+
+    const userMsg = { role: "user", content: text.trim() };
+    const newMessages = [...messages, userMsg];
+    setMessages(newMessages);
+    setLoading(true);
+
+    // Smart Mock AI — context-aware, red-flag sensitive
+    const userMsgCount = newMessages.filter(m => m.role === "user").length;
+
+    setTimeout(() => {
+      const firstUserMsg = newMessages.find(m => m.role === "user")?.content || "";
+      const reply = getMockResponse(lang, userMsgCount - 1, firstUserMsg, newMessages);
+
+      setMessages(prev => [...prev, { role: "assistant", content: reply }]);
+      setLoading(false);
+
+      const parsed = parseAssessment(reply);
+      if (parsed?.severity) {
+        setAssessment(parsed);
+        setVoiceState("speaking");
+        speak("Assessment is complete. Please review the results.", () => setVoiceState("idle"));
+      } else {
+        setVoiceState("speaking");
+        speak(reply, () => {
+          setVoiceState("idle");
+          setTimeout(() => startListening(), 400);
+        });
+      }
+    }, 900);
+  }, [messages, loading, SYSTEM_PROMPT, speak, stopTTS]);
+
+  const startListening = React.useCallback(() => {
+    const rec = recognitionRef.current;
+    if (!rec) { setVoiceSupported(false); return; }
+    if (loading || isRecognizingRef.current) return;
+
+    stopTTS();
+    finalTranscriptRef.current = "";
+    setLiveTranscript("");
+    setMicBlocked(false);
+
+    // Re-set lang in case it changed, reuse same instance (no new permission prompt)
+    rec.lang = langVoice[lang] || "en-IN";
+
+    rec.onstart = () => {
+      isRecognizingRef.current = true;
+      setVoiceState("listening");
+    };
+
+    rec.onresult = (e) => {
+      let interimText = "";
+      let finalText = "";
+      for (let i = e.resultIndex; i < e.results.length; i++) {
+        const transcript = e.results[i][0].transcript;
+        if (e.results[i].isFinal) finalText += transcript;
+        else interimText += transcript;
+      }
+      const display = finalText || interimText;
+      setLiveTranscript(display);
+      if (finalText) finalTranscriptRef.current = finalText;
+    };
+
+    rec.onerror = (e) => {
+      isRecognizingRef.current = false;
+      if (e.error === "not-allowed" || e.error === "permission-denied") {
+        setMicBlocked(true);
+        setVoiceState("idle");
+      } else if (e.error === "no-speech") {
+        setVoiceState("idle");
+      } else if (e.error === "network") {
+        setVoiceState("idle");
+        setMicBlocked(true);
+      } else if (e.error !== "aborted") {
+        setVoiceState("idle");
+      }
+      setLiveTranscript("");
+    };
+
+    rec.onend = () => {
+      isRecognizingRef.current = false;
+      const captured = finalTranscriptRef.current.trim() || liveTranscript.trim();
+      if (captured) {
+        setVoiceState("processing");
+        sendMessage(captured);
+      } else {
+        setVoiceState("idle");
+        setLiveTranscript("");
+      }
+    };
+
+    try { rec.start(); } catch (e) {
+      isRecognizingRef.current = false;
+      setVoiceState("idle");
+    }
+  }, [lang, loading, stopTTS, sendMessage, liveTranscript]);
+
+  const stopListening = React.useCallback(() => {
+    if (recognitionRef.current && isRecognizingRef.current) {
+      try { recognitionRef.current.stop(); } catch {}
+    }
+  }, []);
+
+  const handleMicTap = React.useCallback(() => {
+    if (loading) return;
+    if (voiceState === "speaking") {
+      stopTTS();
+      setVoiceState("idle");
+    } else if (voiceState === "listening") {
+      // Force stop recognition
+      isRecognizingRef.current = false;
+      if (recognitionRef.current) {
+        try { recognitionRef.current.stop(); } catch(e) {}
+        try { recognitionRef.current.abort(); } catch(e) {}
+      }
+      setVoiceState("idle");
+      setLiveTranscript("");
+    } else if (voiceState === "idle") {
+      startListening();
+    }
+  }, [voiceState, loading, stopTTS, startListening]);
+
+  const handleTextSend = () => {
+    if (input.trim()) sendMessage(input.trim());
+  };
+
+  const handleBack = () => {
+    stopTTS();
+    try { recognitionRef.current?.abort(); } catch {}
+    isRecognizingRef.current = false;
+    onBack();
+  };
+
+  const currentVoiceDisplayState = loading ? "processing" : voiceState;
+
+  return (
+    <div style={{ flex: 1, overflow: "hidden", display: "flex", flexDirection: "column" }}>
+      <TopBar title={tx("aiAssessment")} onBack={handleBack} theme={t}
+        right={
+          <div style={{ display: "flex", gap: "6px", alignItems: "center" }}>
+            <div style={{ background: t.accentBg, borderRadius: "10px", padding: "4px 10px" }}>
+              <span style={{ fontSize: "11px", color: t.accentLight, fontWeight: 600 }}>{T[lang]?.appName ? lang.toUpperCase() : "EN"}</span>
+            </div>
+            <div style={{ background: t.surfaceHigh, borderRadius: "10px", padding: "4px 8px", fontSize: "11px", color: t.textSub, fontWeight: 600 }}>
+              {messages.filter(m => m.role === "user").length}/8 Q
+            </div>
+          </div>
+        }
+      />
+
+      <div style={{ padding: "0 20px 10px", flexShrink: 0 }}>
+        <div style={{ background: t.surfaceHigh, borderRadius: "12px", padding: "8px 12px", display: "flex", alignItems: "center", gap: "10px", border: `1px solid ${t.border}` }}>
+          <div style={{
+            width: "30px", height: "30px", borderRadius: "50%", background: t.accentBg,
+            display: "flex", alignItems: "center", justifyContent: "center",
+            fontWeight: 700, color: t.accentLight, flexShrink: 0, fontSize: "13px",
+          }}>{patient.name[0]}</div>
+          <div style={{ flex: 1 }}>
+            <span style={{ fontSize: "13px", fontWeight: 600, color: t.text }}>{patient.name}, {patient.age}</span>
+            <span style={{ fontSize: "11px", color: t.textSub }}> · {patient.village}</span>
+          </div>
+          {voiceState === "speaking" && (
+            <div style={{ display: "flex", alignItems: "center", gap: "2px" }}>
+              {[0.5,1,0.7,0.9,0.6,1,0.4].map((h, i) => (
+                <div key={i} style={{
+                  width: "2px", height: `${h * 12 + 2}px`, borderRadius: "1px", background: "#34A853",
+                  animation: `geminiWavePulse 0.5s ${i * 0.07}s ease-in-out infinite alternate`,
+                }} />
+              ))}
+            </div>
+          )}
+        </div>
+      </div>
+
+      <div style={{ flex: 1, overflowY: "auto", padding: "0 16px", display: "flex", flexDirection: "column", gap: "10px" }}>
+        {messages.map((m, i) => (
+          <div key={i} style={{ display: "flex", justifyContent: m.role === "user" ? "flex-end" : "flex-start", alignItems: "flex-end", gap: "6px" }}>
+            {m.role === "assistant" && (
+              <div style={{
+                width: "26px", height: "26px", borderRadius: "50%",
+                background: "conic-gradient(from 0deg, #4285F4, #9C27B0, #F4511E, #34A853, #4285F4)",
+                display: "flex", alignItems: "center", justifyContent: "center", fontSize: "11px", flexShrink: 0, marginBottom: "2px",
+              }}>✦</div>
+            )}
+            <div style={{ maxWidth: "78%" }}>
+              <div style={{
+                background: m.role === "user" ? t.accent : t.surfaceHigh,
+                color: t.text,
+                borderRadius: m.role === "user" ? "16px 16px 4px 16px" : "16px 16px 16px 4px",
+                padding: "10px 13px", fontSize: "13px", lineHeight: "1.6",
+                border: m.role === "assistant" ? `1px solid ${t.border}` : "none",
+                whiteSpace: "pre-wrap",
+              }}>
+                {m.content.includes("ASSESSMENT:") ? (
+                  <span style={{ color: t.green, fontWeight: 600 }}>✦ Assessment complete — see results below</span>
+                ) : m.content}
+              </div>
+              {m.role === "assistant" && !m.content.includes("ASSESSMENT:") && (
+                <button onClick={() => {
+                  if (voiceState === "speaking") { stopTTS(); setVoiceState("idle"); }
+                  else { setVoiceState("speaking"); speak(m.content, () => setVoiceState("idle")); }
+                }}
+                  style={{ background: "none", border: "none", cursor: "pointer", padding: "3px 4px", fontSize: "10px", color: t.textMuted }}>
+                  {voiceState === "speaking" ? "⏹ Stop" : "🔊"}
+                </button>
+              )}
+            </div>
+          </div>
+        ))}
+
+        {loading && (
+          <div style={{ display: "flex", justifyContent: "flex-start", alignItems: "flex-end", gap: "6px" }}>
+            <div style={{
+              width: "26px", height: "26px", borderRadius: "50%",
+              background: "conic-gradient(from 0deg, #4285F4, #9C27B0, #F4511E, #34A853, #4285F4)",
+              display: "flex", alignItems: "center", justifyContent: "center", fontSize: "11px",
+            }}>✦</div>
+            <div style={{ background: t.surfaceHigh, border: `1px solid ${t.border}`, borderRadius: "16px 16px 16px 4px", padding: "12px 16px", display: "flex", gap: "5px", alignItems: "center" }}>
+              {[0,1,2].map(i => <div key={i} style={{
+                width: "6px", height: "6px", borderRadius: "50%", background: t.accent,
+                animation: `geminiBounceDot 1s ${i*0.2}s infinite`,
+              }} />)}
+            </div>
+          </div>
+        )}
+
+        {assessment && !loading && (
+          <div style={{ background: t.accentBg, border: `1px solid ${t.accent}`, borderRadius: "16px", padding: "14px", margin: "4px 0" }}>
+            <div style={{ fontSize: "12px", fontWeight: 700, color: t.accentLight, marginBottom: "8px" }}>{tx("assessmentReady")}</div>
+            <Btn label={tx("viewResult")} onClick={() => onComplete(assessment, messages)} style={{ borderRadius: "10px", padding: "11px" }} />
+          </div>
+        )}
+
+        <div ref={bottomRef} />
+      </div>
+
+      {(voiceState === "listening" || (liveTranscript && voiceState !== "idle")) && !assessment && (
+        <div style={{ padding: "6px 16px 0", flexShrink: 0 }}>
+          <div style={{
+            background: voiceState === "listening" ? "rgba(244,81,30,0.1)" : t.accentBg,
+            border: `1px solid ${voiceState === "listening" ? "#F4511E" : t.accent}`,
+            borderRadius: "12px", padding: "8px 12px", minHeight: "36px",
+            display: "flex", alignItems: "center", gap: "8px",
+          }}>
+            <span style={{ fontSize: "10px" }}>🎙️</span>
+            <span style={{
+              fontSize: "12px", color: voiceState === "listening" ? "#F4511E" : t.accentLight,
+              flex: 1, fontStyle: liveTranscript ? "normal" : "italic",
+            }}>
+              {liveTranscript || (tx("speakNow") + "...")}
+            </span>
+            {liveTranscript && (
+              <button onClick={() => { stopListening(); sendMessage(liveTranscript); }}
+                style={{
+                  background: t.accent, border: "none", borderRadius: "8px",
+                  padding: "4px 10px", fontSize: "11px", fontWeight: 700, color: "#fff", cursor: "pointer", flexShrink: 0,
+                }}>
+                Send ↑
+              </button>
+            )}
+          </div>
+        </div>
+      )}
+
+      {micBlocked && (
+        <div style={{ padding: "4px 16px 0", flexShrink: 0 }}>
+          <div style={{
+            background: t.amberBg, border: `1px solid ${t.amber}`, borderRadius: "10px",
+            padding: "7px 12px", fontSize: "11px", color: t.amber,
+            display: "flex", justifyContent: "space-between", alignItems: "center",
+          }}>
+            <span>🎤 {tx("micDenied")}</span>
+            <button onClick={() => setMicBlocked(false)} style={{ background: "none", border: "none", color: t.amber, cursor: "pointer", fontSize: "14px" }}>×</button>
+          </div>
+        </div>
+      )}
+
+      {!assessment && (
+        <div style={{ padding: "10px 16px 18px", flexShrink: 0 }}>
+          <div style={{
+            display: "flex", gap: "8px", background: t.surfaceHigh, borderRadius: "14px",
+            padding: "6px 6px 6px 12px", border: `1px solid ${voiceState === "listening" ? "#F4511E" : t.border}`,
+            marginBottom: "16px", transition: "border-color 0.2s",
+          }}>
+            <input
+              value={voiceState === "listening" ? liveTranscript : input}
+              onChange={e => { if (voiceState !== "listening") setInput(e.target.value); }}
+              onKeyDown={e => e.key === "Enter" && voiceState === "idle" && handleTextSend()}
+              placeholder={voiceState === "listening" ? (tx("listening") + "... Speak now!") : voiceState === "speaking" ? "AI is speaking..." : tx("typeResponse")}
+              readOnly={voiceState === "listening" || voiceState === "speaking"}
+              style={{ flex: 1, background: "none", border: "none", outline: "none", fontSize: "13px", color: t.text, padding: "6px 0" }}
+            />
+            <button
+              onClick={handleTextSend}
+              disabled={loading || !input.trim() || voiceState !== "idle"}
+              style={{
+                background: t.accent, border: "none", borderRadius: "10px",
+                width: "36px", height: "36px", display: "flex", alignItems: "center", justifyContent: "center",
+                cursor: "pointer", opacity: (!input.trim() || loading || voiceState !== "idle") ? 0.3 : 1,
+                fontSize: "15px", flexShrink: 0,
+              }}
+            >
+              ↑
+            </button>
+          </div>
+
+          <div style={{ display: "flex", justifyContent: "center" }}>
+            {voiceSupported && !micBlocked ? (
+              <GeminiOrb
+                state={currentVoiceDisplayState}
+                onClick={handleMicTap}
+                disabled={loading}
+                lang={lang}
+                tx={tx}
+              />
+            ) : (
+              <div style={{ fontSize: "12px", color: t.textMuted, textAlign: "center", padding: "12px", lineHeight: 1.6 }}>
+                🎤 {micBlocked ? tx("micDenied") : "Voice not supported — please type above."}
+              </div>
+            )}
+          </div>
+        </div>
+      )}
+    </div>
+  );
+};
+
+
+
+const TriageResult = ({ patient, assessment, onBook, onBack, onSpecialist, onEmergency, t, lang }) => {
+  const tx = (key) => T[lang]?.[key] || T.en[key] || key;
+  const sev = assessment.severity?.toLowerCase().includes("critical") ? "red"
+    : assessment.severity?.toLowerCase().includes("moderate") ? "amber" : "green";
+  const sm = severityMap(t);
+  const sevStyle = sm[sev] || sm.green;
+  const needsSpecialist = /cardiac|heart|cardio|orthop|gynec|neuro|cancer/i.test(assessment.condition || "");
+
+  return (
+    <div style={{ flex: 1, overflow: "hidden", display: "flex", flexDirection: "column" }}>
+      <TopBar title={tx("assessmentResult")} onBack={onBack} theme={t} />
+      <div style={{ flex: 1, overflowY: "auto", padding: "0 20px 20px", display: "flex", flexDirection: "column", gap: "12px" }}>
+        <div style={{ background: sevStyle.bg, border: `1px solid ${sevStyle.color}`, borderRadius: "16px", padding: "16px" }}>
+          <div style={{ display: "flex", alignItems: "center", gap: "10px", marginBottom: "8px" }}>
+            <span style={{ fontSize: "22px" }}>{sev === "red" ? "🚨" : sev === "amber" ? "⚠️" : "✅"}</span>
+            <div>
+              <Pill label={assessment.severity || "Mild"} color={sevStyle.color} bg={sevStyle.bg} />
+              <div style={{ fontSize: "13px", color: t.text, marginTop: "4px", fontWeight: 600 }}>{assessment.condition}</div>
+            </div>
+          </div>
+          <div style={{ fontSize: "13px", color: t.textSub, lineHeight: "1.5" }}>
+            <strong style={{ color: t.text }}>{tx("recommended")} </strong>{assessment.action}
+          </div>
+        </div>
+        <div style={{ background: t.surfaceHigh, borderRadius: "16px", padding: "14px", border: `1px solid ${t.border}` }}>
+          <div style={{ fontSize: "11px", fontWeight: 700, color: t.accentLight, letterSpacing: "0.06em", marginBottom: "8px" }}>{tx("doctorBrief")}</div>
+          <p style={{ margin: 0, fontSize: "13px", color: t.textSub, lineHeight: "1.6" }}>{assessment.doctorBrief}</p>
+        </div>
+        <div style={{ background: t.surfaceHigh, borderRadius: "16px", padding: "14px", border: `1px solid ${t.border}` }}>
+          <div style={{ fontSize: "11px", fontWeight: 700, color: t.green, letterSpacing: "0.06em", marginBottom: "8px" }}>{tx("careAdvice")}</div>
+          <p style={{ margin: 0, fontSize: "13px", color: t.textSub, lineHeight: "1.6" }}>{assessment.careAdvice}</p>
+        </div>
+        {patient?.ayushmanCard === true && (
+          <div style={{ background: t.greenBg, borderRadius: "12px", padding: "10px 14px", border: `1px solid ${t.green}`, display: "flex", alignItems: "center", gap: "8px" }}>
+            <span style={{ fontSize: "14px" }}>🏛️</span>
+            <div>
+              <div style={{ fontSize: "12px", fontWeight: 600, color: t.green }}>{tx("ayushman")}</div>
+              <div style={{ fontSize: "11px", color: t.textSub }}>Treatment covered under Ayushman Bharat · Show card at PHC</div>
+            </div>
+          </div>
+        )}
+        {patient?.ayushmanCard === null && (
+          <div style={{ background: t.amberBg, borderRadius: "12px", padding: "10px 14px", border: `1px solid ${t.amber}`, display: "flex", alignItems: "center", gap: "8px" }}>
+            <span style={{ fontSize: "14px" }}>🏛️</span>
+            <div>
+              <div style={{ fontSize: "12px", fontWeight: 600, color: t.amber }}>Check Ayushman Bharat eligibility</div>
+              <div style={{ fontSize: "11px", color: t.textSub }}>Verify card status at nearest PHC · May be covered</div>
+            </div>
+          </div>
+        )}
+        {needsSpecialist && (
+          <div style={{ background: t.redBg, borderRadius: "12px", padding: "10px 14px", border: `1px solid ${t.red}`, display: "flex", alignItems: "center", gap: "8px" }}>
+            <span style={{ fontSize: "14px" }}>⚠️</span>
+            <div style={{ flex: 1 }}>
+              <div style={{ fontSize: "12px", fontWeight: 600, color: t.red }}>{tx("specialistNeeded")}</div>
+              <div style={{ fontSize: "11px", color: t.textSub }}>{tx("noSpecialist")}</div>
+            </div>
+            <button onClick={onSpecialist} style={{ background: t.red, color: "#fff", border: "none", borderRadius: "8px", padding: "6px 10px", fontSize: "11px", fontWeight: 600, cursor: "pointer" }}>{tx("refer")}</button>
+          </div>
+        )}
+        <div style={{ display: "flex", flexDirection: "column", gap: "8px" }}>
+          {sev === "green" && <Btn label={`💊 ${tx("pharmacyMap")}`} onClick={onBook} />}
+          {sev === "amber" && <Btn label={tx("bookTeleconsult")} onClick={onBook} />}
+          {sev === "red" && <Btn label={tx("dispatchAmbulance")} variant="danger" onClick={onEmergency} />}
+        </div>
+      </div>
+    </div>
+  );
+};
+
+
+
+const EmergencyDispatch = ({ patient, assessment, onBack, t, lang }) => {
+  const tx = (key) => T[lang]?.[key] || T.en[key] || key;
+  const [coords, setCoords] = React.useState(null);
+  const [dispatched, setDispatched] = React.useState(false);
+
+  React.useEffect(() => {
+    navigator.geolocation?.getCurrentPosition(
+      pos => setCoords({ lat: pos.coords.latitude.toFixed(4), lng: pos.coords.longitude.toFixed(4) }),
+      () => setCoords({ lat: "24.8829", lng: "85.1167" })
+    );
+  }, []);
+
+  return (
+    <div style={{ flex: 1, overflow: "hidden", display: "flex", flexDirection: "column" }}>
+      <TopBar title={tx("emergency")} onBack={onBack} theme={t} />
+      <div style={{ flex: 1, overflowY: "auto", padding: "0 20px 20px", display: "flex", flexDirection: "column", gap: "12px" }}>
+        <div style={{ background: t.redBg, border: `2px solid ${t.red}`, borderRadius: "16px", padding: "16px", textAlign: "center" }}>
+          <div style={{ fontSize: "36px", marginBottom: "8px" }}>🚨</div>
+          <div style={{ fontSize: "16px", fontWeight: 700, color: t.red }}>CRITICAL CASE</div>
+          <div style={{ fontSize: "13px", color: t.textSub, marginTop: "4px" }}>{patient.name} · {patient.village}</div>
+        </div>
+        <div style={{
+          background: t.mapBg, borderRadius: "16px", height: "160px", border: `1px solid ${t.border}`,
+          display: "flex", alignItems: "center", justifyContent: "center", flexDirection: "column", gap: "8px",
+          position: "relative", overflow: "hidden",
+        }}>
+          <div style={{ position: "absolute", inset: 0, background: "repeating-linear-gradient(0deg,transparent,transparent 20px,rgba(124,111,224,0.05) 20px,rgba(124,111,224,0.05) 21px)" }} />
+          <div style={{ position: "absolute", inset: 0, background: "repeating-linear-gradient(90deg,transparent,transparent 20px,rgba(124,111,224,0.05) 20px,rgba(124,111,224,0.05) 21px)" }} />
+          <div style={{ width: "48px", height: "48px", borderRadius: "50%", background: t.red, display: "flex", alignItems: "center", justifyContent: "center", fontSize: "24px", zIndex: 1 }}>📍</div>
+          <div style={{ fontSize: "13px", color: t.textSub, zIndex: 1 }}>{coords ? `${coords.lat}° N, ${coords.lng}° E` : tx("gpsCoords")}</div>
+          <div style={{ fontSize: "11px", color: t.textMuted, zIndex: 1 }}>{tx("eta")}: 12–15 {tx("minutes")}</div>
+        </div>
+        <div style={{ background: t.surfaceHigh, borderRadius: "14px", padding: "14px", border: `1px solid ${t.border}` }}>
+          <div style={{ fontSize: "12px", fontWeight: 600, color: t.text, marginBottom: "6px" }}>{tx("dispatching")}</div>
+          <div style={{ display: "flex", gap: "8px", alignItems: "center" }}>
+            <div style={{ width: "8px", height: "8px", borderRadius: "50%", background: t.green, animation: "geminiPulseOuter 1s infinite" }} />
+            <span style={{ fontSize: "12px", color: t.textSub }}>108 Ambulance · {patient.village} PHC</span>
+          </div>
+        </div>
+        <Btn label={dispatched ? tx("ambulanceDispatched") : `🚑 ${tx("dispatchAmbulance")}`} variant="danger" onClick={() => setDispatched(true)} disabled={dispatched} />
+        <div style={{ background: t.surfaceHigh, borderRadius: "12px", padding: "10px 14px", border: `1px solid ${t.border}` }}>
+          <div style={{ fontSize: "11px", color: t.textMuted, lineHeight: "1.5" }}>
+            <strong style={{ color: t.text }}>Patient:</strong> {patient.name}, {patient.age}y · {assessment.condition}<br/>
+            <strong style={{ color: t.text }}>Symptom:</strong> {assessment.severity}<br/>
+            <strong style={{ color: t.text }}>Action:</strong> {assessment.action}
+          </div>
+        </div>
+      </div>
+    </div>
+  );
+};
+
+
+
+const Teleconsult = ({ patient, assessment, onBack, onEnd, t, lang }) => {
+  const tx = (key) => T[lang]?.[key] || T.en[key] || key;
+  const [connected, setConnected] = React.useState(false);
+  const [selectedDoctor, setSelectedDoctor] = React.useState(null);
+  const [timer, setTimer] = React.useState(0);
+  const [chatMessages, setChatMessages] = React.useState([]);
+  const [chatInput, setChatInput] = React.useState("");
+
+  // Fixed room name so both demo devices join the same call
+  const jitsiRoom = "SahayakDemoConsult2026";
+
+  React.useEffect(() => {
+    let interval;
+    if (connected) interval = setInterval(() => setTimer(s => s + 1), 1000);
+    return () => clearInterval(interval);
+  }, [connected]);
+
+  const formatTime = (s) => `${Math.floor(s/60)}:${(s%60).toString().padStart(2,'0')}`;
+
+  const handleConnect = (doc) => {
+    setSelectedDoctor(doc);
+    setTimeout(() => setConnected(true), 1200);
+  };
+
+  const handleSendChat = () => {
+    if (!chatInput.trim()) return;
+    setChatMessages(prev => [...prev, { from: "asha", text: chatInput }]);
+    setChatInput("");
+    setTimeout(() => {
+      setChatMessages(prev => [...prev, { from: "doc", text: "Noted. Please continue with the assessment." }]);
+    }, 1500);
+  };
+
+  if (!connected) {
+    return (
+      <div style={{ flex: 1, overflow: "hidden", display: "flex", flexDirection: "column" }}>
+        <TopBar title={tx("teleconsult")} onBack={onBack} theme={t} />
+        <div style={{ flex: 1, overflowY: "auto", padding: "0 20px 20px", display: "flex", flexDirection: "column", gap: "12px" }}>
+          <div style={{ background: t.accentBg, borderRadius: "16px", padding: "14px", border: `1px solid ${t.accent}` }}>
+            <div style={{ fontSize: "12px", fontWeight: 600, color: t.accentLight }}>{patient?.name}, {patient?.age} · {patient?.village}</div>
+            <div style={{ fontSize: "12px", color: t.textSub, marginTop: "4px" }}>{assessment?.condition}</div>
+          </div>
+          {/* Demo tip banner */}
+          <div style={{ background: t.amberBg, borderRadius: "12px", padding: "10px 14px", border: `1px solid ${t.amber}`, fontSize: "12px", color: t.amber }}>
+            💡 <strong>Demo tip:</strong> Share <code style={{ fontSize: "11px", background: "rgba(0,0,0,0.2)", padding: "2px 6px", borderRadius: "4px" }}>meet.jit.si/{jitsiRoom}</code> with your friend — they'll join the same call!
+          </div>
+          <div style={{ fontSize: "13px", fontWeight: 600, color: t.text, marginBottom: "4px" }}>{tx("availableDoctors")}</div>
+          {mockDoctors.map(doc => (
+            <div key={doc.id} onClick={() => handleConnect(doc)} style={{
+              background: t.surfaceHigh, borderRadius: "14px", padding: "12px 14px",
+              border: `1px solid ${t.border}`, cursor: "pointer",
+              display: "flex", alignItems: "center", gap: "12px",
+            }}>
+              <div style={{
+                width: "40px", height: "40px", borderRadius: "50%",
+                background: doc.status === "online" ? t.greenBg : t.amberBg,
+                display: "flex", alignItems: "center", justifyContent: "center",
+                fontSize: "14px", fontWeight: 700, color: doc.status === "online" ? t.green : t.amber,
+              }}>{doc.avatar}</div>
+              <div style={{ flex: 1 }}>
+                <div style={{ fontSize: "13px", fontWeight: 600, color: t.text }}>{doc.name}</div>
+                <div style={{ fontSize: "11px", color: t.textSub }}>{doc.specialty}</div>
+              </div>
+              <div style={{ textAlign: "right" }}>
+                <Pill label={tx(doc.status)} color={doc.status === "online" ? t.green : doc.status === "busy" ? t.amber : t.textMuted} bg={doc.status === "online" ? t.greenBg : doc.status === "busy" ? t.amberBg : t.surfaceHigh} />
+                <div style={{ fontSize: "11px", color: t.textMuted, marginTop: "4px" }}>{tx("waitTime")}: {doc.wait}</div>
+              </div>
+            </div>
+          ))}
+        </div>
+      </div>
+    );
+  }
+
+  return (
+    <div style={{ flex: 1, overflow: "hidden", display: "flex", flexDirection: "column", background: "#0a0a12" }}>
+      {/* Live header bar */}
+      <div style={{ padding: "10px 16px", display: "flex", alignItems: "center", justifyContent: "space-between", background: "rgba(76,175,125,0.12)", borderBottom: "1px solid rgba(76,175,125,0.3)" }}>
+        <div style={{ display: "flex", alignItems: "center", gap: "8px" }}>
+          <span style={{ width: "8px", height: "8px", borderRadius: "50%", background: "#4CAF7D", display: "inline-block" }} />
+          <span style={{ fontSize: "12px", color: "#4CAF7D", fontWeight: 600 }}>Live · {selectedDoctor?.name}</span>
+        </div>
+        <span style={{ fontSize: "13px", color: "#4CAF7D", fontVariantNumeric: "tabular-nums", fontWeight: 700 }}>{formatTime(timer)}</span>
+      </div>
+
+      {/* Real Jitsi video call — friend opens meet.jit.si/SahayakDemoConsult2026 to join */}
+      <div style={{ flex: 1, position: "relative" }}>
+        <iframe
+          src={`https://meet.jit.si/${jitsiRoom}#userInfo.displayName="${encodeURIComponent("ASHA Worker - " + (patient?.village || "Sahayak"))}"&config.startWithVideoMuted=false&config.startWithAudioMuted=false&config.toolbarButtons=["microphone","camera","hangup"]`}
+          allow="camera; microphone; fullscreen; display-capture; autoplay"
+          style={{ width: "100%", height: "100%", border: "none", display: "block" }}
+          title="Video Consult"
+        />
+      </div>
+
+      {/* Notes strip */}
+      <div style={{ background: t.surface, borderTop: `1px solid ${t.border}`, display: "flex", flexDirection: "column", maxHeight: "120px" }}>
+        <div style={{ flex: 1, overflowY: "auto", padding: "6px 12px", display: "flex", flexDirection: "column", gap: "4px" }}>
+          {chatMessages.map((m, i) => (
+            <div key={i} style={{
+              alignSelf: m.from === "asha" ? "flex-end" : "flex-start",
+              background: m.from === "asha" ? t.accent : t.surfaceHigh,
+              color: t.text, borderRadius: "10px", padding: "5px 10px", fontSize: "12px", maxWidth: "80%",
+            }}>{m.text}</div>
+          ))}
+        </div>
+        <div style={{ padding: "6px 12px", display: "flex", gap: "8px", borderTop: `1px solid ${t.border}` }}>
+          <input
+            value={chatInput} onChange={e => setChatInput(e.target.value)}
+            onKeyDown={e => e.key === "Enter" && handleSendChat()}
+            placeholder="Add note for doctor..."
+            style={{ flex: 1, background: t.surfaceHigh, border: `1px solid ${t.border}`, borderRadius: "8px", padding: "7px 10px", fontSize: "12px", color: t.text, outline: "none" }}
+          />
+          <button onClick={handleSendChat} style={{ background: t.accent, border: "none", borderRadius: "8px", padding: "7px 12px", color: "#fff", fontSize: "12px", fontWeight: 600, cursor: "pointer" }}>Send</button>
+        </div>
+      </div>
+
+      <div style={{ padding: "10px 20px", background: t.surface }}>
+        <button onClick={onEnd} style={{ width: "100%", background: t.red, border: "none", borderRadius: "12px", padding: "12px", color: "#fff", fontSize: "13px", fontWeight: 600, cursor: "pointer" }}>{tx("endCall")}</button>
+      </div>
+    </div>
+  );
+};
+
+
+
+const PatientProfile = ({ patient, onBack, t, lang, onStartAssessment }) => {
+  const tx = (key) => T[lang]?.[key] || T.en[key] || key;
+  return (
+    <div style={{ flex: 1, overflow: "hidden", display: "flex", flexDirection: "column" }}>
+      <TopBar title={tx("patientProfile")} onBack={onBack} theme={t} />
+      <div style={{ flex: 1, overflowY: "auto", padding: "20px", display: "flex", flexDirection: "column", gap: "16px" }}>
+        <div style={{ textAlign: "center", padding: "30px 20px", background: t.surfaceHigh, borderRadius: "16px" }}>
+          <div style={{ fontSize: "56px", marginBottom: "12px" }}>👤</div>
+          <h2 style={{ margin: "0 0 8px", color: t.text }}>{patient.name}</h2>
+          <p style={{ color: t.textSub, fontSize: "15px" }}>{patient.age} years • {patient.village}</p>
+        </div>
+
+        <Btn label={tx("startAssessment")} onClick={() => onStartAssessment(patient)} />
+
+        <div style={{ background: t.surfaceHigh, borderRadius: "16px", padding: "16px" }}>
+          <div style={{ fontWeight: 600, marginBottom: "12px", color: t.text }}>{tx("caseHistory")}</div>
+          {patient.history?.length > 0 ? (
+            patient.history.map((h, i) => (
+              <div key={i} style={{ padding: "12px", background: t.bg, borderRadius: "10px", marginBottom: "8px", fontSize: "13px" }}>
+                <strong>{h.date}</strong> — {h.symptom} ({h.severity})
+              </div>
+            ))
+          ) : (
+            <p style={{ color: t.textMuted, fontStyle: "italic" }}>{tx("noHistory")}</p>
+          )}
+        </div>
+      </div>
+    </div>
+  );
+};
+
+
+
+const Prescription = ({ patient, assessment, onBack, t, lang }) => {
+  const tx = (key) => T[lang]?.[key] || T.en[key] || key;
+  return (
+    <div style={{ flex: 1, overflow: "hidden", display: "flex", flexDirection: "column" }}>
+      <TopBar title={tx("prescription")} onBack={onBack} theme={t} />
+      <div style={{ flex: 1, padding: "20px", overflowY: "auto" }}>
+        <div style={{ background: t.surfaceHigh, borderRadius: "16px", padding: "20px" }}>
+          <h3 style={{ margin: "0 0 16px", color: t.text }}>{patient.name}</h3>
+          <p><strong>{tx("diagnosis")}:</strong> {assessment?.condition || "Fever & Cough"}</p>
+          <p><strong>{tx("dosage")}:</strong> Tab. Paracetamol 500mg — 1 tab thrice daily × 5 days</p>
+          <p><strong>{tx("instructions")}:</strong> Take with food. Plenty of fluids.</p>
+        </div>
+
+        <Btn label={tx("sendRx")} onClick={() => alert(tx("orderPlaced") || "Order Placed!")} style={{ marginTop: "20px" }} />
+        <Btn label={tx("shareWhatsApp")} variant="ghost" style={{ marginTop: "12px" }} />
+      </div>
+    </div>
+  );
+};
+
+
+
+const PharmacyMap = ({ onBack, t, lang }) => {
+  const tx = (key) => T[lang]?.[key] || T.en[key] || key;
+  return (
+    <div style={{ flex: 1, overflow: "hidden", display: "flex", flexDirection: "column" }}>
+      <TopBar title={tx("pharmacyMap") || "Nearby Pharmacies"} onBack={onBack} theme={t} />
+      <div style={{ flex: 1, padding: "20px", overflowY: "auto" }}>
+        <div style={{ background: t.surfaceHigh, borderRadius: "16px", padding: "20px", textAlign: "center" }}>
+          <p style={{ fontSize: "48px", margin: "20px 0" }}>🗺️</p>
+          <h3>Nearby Jan Aushadhi & Pharmacies</h3>
+          <p style={{ color: t.textSub }}>Map view would appear here</p>
+        </div>
+      </div>
+    </div>
+  );
+};
+
+
+
+const SpecialistRouting = ({ onBack, t, lang }) => {
+  const tx = (key) => T[lang]?.[key] || T.en[key] || key;
+  return (
+    <div style={{ flex: 1, overflow: "hidden", display: "flex", flexDirection: "column" }}>
+      <TopBar title={tx("specialistRouting") || "Specialist Referral"} onBack={onBack} theme={t} />
+      <div style={{ flex: 1, padding: "20px", overflowY: "auto", textAlign: "center" }}>
+        <p style={{ fontSize: "48px", margin: "40px 0" }}>🏥</p>
+        <h3>Specialist Routing</h3>
+        <p style={{ color: t.textSub }}>Referral to nearest facility / Tele-Specialist</p>
+      </div>
+    </div>
+  );
+};
+
+
+
+const App = () => {
+  const [theme, setTheme] = React.useState(makeTheme(true));
+  const [lang, setLang] = React.useState("en");
+  const [screen, setScreen] = React.useState("login");
+  const [user, setUser] = React.useState(null);
+  const [currentPatient, setCurrentPatient] = React.useState(null);
+  const [assessment, setAssessment] = React.useState(null);
+
+  const t = theme;
+  const tx = (key) => T[lang]?.[key] || T.en[key] || key;
+
+  const handleLogin = (data) => {
+    setUser(data);
+    setLang(data.lang || "en");
+    setScreen("dashboard");
+  };
+
+  const handleNewCase = () => setScreen("newPatient");
+
+  const handlePatientSelect = (p) => {
+    setCurrentPatient(p);
+    setScreen("patientProfile");
+  };
+
+  const startAssessmentFlow = (patient) => {
+    setCurrentPatient(patient);
+    setAssessment(null);
+    setScreen("symptomChat");
+  };
+
+  const completeAssessment = (assess, history) => {
+    setAssessment(assess);
+    setScreen("triageResult");
+  };
+
+  return (
+    <div style={{
+      height: "100dvh",
+      background: t.bg,
+      color: t.text,
+      fontFamily: "-apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif",
+      display: "flex",
+      flexDirection: "column",
+      overflow: "hidden",
+      maxWidth: "480px",
+      margin: "0 auto",
+      boxShadow: "0 0 30px rgba(0,0,0,0.3)",
+    }}>
+      {screen === "login" && (
+        <Login onLogin={handleLogin} onSkip={() => { setUser({ role: "asha" }); setScreen("dashboard"); }} initialLang={lang} />
+      )}
+
+      {screen === "dashboard" && (
+        <Dashboard onNewCase={handleNewCase} onPatient={handlePatientSelect} onSettings={() => setScreen("settings")} t={t} lang={lang} />
+      )}
+
+      {screen === "newPatient" && (
+        <NewPatient onStart={startAssessmentFlow} onBack={() => setScreen("dashboard")} t={t} lang={lang} />
+      )}
+
+      {screen === "symptomChat" && currentPatient && (
+        <SymptomChat patient={currentPatient} onComplete={completeAssessment} onBack={() => setScreen("newPatient")} t={t} lang={lang} />
+      )}
+
+      {screen === "triageResult" && currentPatient && assessment && (
+        <TriageResult
+          patient={currentPatient}
+          assessment={assessment}
+          onBook={() => setScreen("teleconsult")}
+          onBack={() => setScreen("symptomChat")}
+          onSpecialist={() => setScreen("specialist")}
+          onEmergency={() => setScreen("emergency")}
+          t={t}
+          lang={lang}
+        />
+      )}
+
+      {screen === "emergency" && currentPatient && (
+        <EmergencyDispatch patient={currentPatient} assessment={assessment} onBack={() => setScreen("triageResult")} t={t} lang={lang} />
+      )}
+
+      {screen === "teleconsult" && (
+        <Teleconsult patient={currentPatient} assessment={assessment} onBack={() => setScreen("triageResult")} onEnd={() => setScreen("prescription")} t={t} lang={lang} />
+      )}
+
+      {screen === "prescription" && (
+        <Prescription patient={currentPatient} assessment={assessment} onBack={() => setScreen("triageResult")} t={t} lang={lang} />
+      )}
+
+      {screen === "patientProfile" && currentPatient && (
+        <PatientProfile patient={currentPatient} onBack={() => setScreen("dashboard")} t={t} lang={lang} onStartAssessment={startAssessmentFlow} />
+      )}
+
+      {screen === "specialist" && (
+        <SpecialistRouting onBack={() => setScreen("triageResult")} t={t} lang={lang} />
+      )}
+
+      {screen === "pharmacy" && (
+        <PharmacyMap onBack={() => setScreen("triageResult")} t={t} lang={lang} />
+      )}
+
+      {screen === "settings" && (
+        <div style={{ flex: 1, padding: "20px" }}>
+          <TopBar title={tx("settings")} onBack={() => setScreen("dashboard")} theme={t} />
+          <div style={{ paddingTop: "40px" }}>
+            <Btn label={t.dark ? tx("lightMode") : tx("darkMode")} onClick={() => setTheme(makeTheme(!t.dark))} />
+            <Btn label={tx("logout")} variant="danger" onClick={() => { setUser(null); setScreen("login"); }} style={{ marginTop: "16px" }} />
+          </div>
+        </div>
+      )}
+    </div>
+  );
+};
+
+App;
+
+
+
+const root = ReactDOM.createRoot(document.getElementById("root"));
+root.render(<App />);
+
+  </script>
+</body>
+</html>

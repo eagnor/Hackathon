@@ -1,0 +1,23 @@
+// ── Theme System ─────────────────────────────────────────────
+export const makeTheme = (dark = true) => ({
+  bg: dark ? "#0F0E17" : "#F5F3FF",
+  surface: dark ? "#1A1928" : "#FFFFFF",
+  surfaceHigh: dark ? "#232235" : "#EDE9FF",
+  border: dark ? "#2E2C45" : "#D4CEFF",
+  accent: "#7C6FE0",
+  accentLight: "#A99DF5",
+  accentBg: dark ? "#1E1B38" : "#EDE9FF",
+  green: "#4CAF7D",
+  greenBg: dark ? "#0F2318" : "#E8F8EF",
+  amber: "#F0A500",
+  amberBg: dark ? "#221800" : "#FFF8E6",
+  red: "#F05454",
+  redBg: dark ? "#220D0D" : "#FFF0F0",
+  text: dark ? "#EEEAF8" : "#1A1928",
+  textSub: dark ? "#8B87A8" : "#5A5780",
+  textMuted: dark ? "#504E6A" : "#9B98B8",
+  mapBg: dark ? "#151425" : "#E8E6FF",
+  warning: "#F0A500",
+  success: "#4CAF7D",
+  dark,
+});
